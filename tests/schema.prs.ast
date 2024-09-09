@@ -1,0 +1,198 @@
+<schema {
+  definitions: {
+    AtomKind: <or [
+      [
+        "Boolean"
+        <lit Boolean>
+      ]
+      [
+        "Double"
+        <lit Double>
+      ]
+      [
+        "SignedInteger"
+        <lit SignedInteger>
+      ]
+      [
+        "String"
+        <lit String>
+      ]
+      [
+        "ByteString"
+        <lit ByteString>
+      ]
+      [
+        "Symbol"
+        <lit Symbol>
+      ]
+    ]>
+    Binding: <rec <lit named> <tuple [
+      <named name <atom Symbol>>
+      <named pattern <ref [] SimplePattern>>
+    ]>>
+    Bundle: <rec <lit bundle> <tuple [
+      <named modules <ref [] Modules>>
+    ]>>
+    CompoundPattern: <or [
+      [
+        "rec"
+        <rec <lit rec> <tuple [
+          <named label <ref [] NamedPattern>>
+          <named fields <ref [] NamedPattern>>
+        ]>>
+      ]
+      [
+        "tuple"
+        <rec <lit tuple> <tuple [
+          <named patterns <seqof <ref [] NamedPattern>>>
+        ]>>
+      ]
+      [
+        "tuplePrefix"
+        <rec <lit tuplePrefix> <tuple [
+          <named fixed <seqof <ref [] NamedPattern>>>
+          <named variable <ref [] NamedSimplePattern>>
+        ]>>
+      ]
+      [
+        "dict"
+        <rec <lit dict> <tuple [
+          <named entries <ref [] DictionaryEntries>>
+        ]>>
+      ]
+    ]>
+    Definition: <or [
+      [
+        "or"
+        <rec <lit or> <tuple [
+          <tuplePrefix [
+            <named pattern0 <ref [] NamedAlternative>>
+            <named pattern1 <ref [] NamedAlternative>>
+          ] <named patternN <seqof <ref [] NamedAlternative>>>>
+        ]>>
+      ]
+      [
+        "and"
+        <rec <lit and> <tuple [
+          <tuplePrefix [
+            <named pattern0 <ref [] NamedPattern>>
+            <named pattern1 <ref [] NamedPattern>>
+          ] <named patternN <seqof <ref [] NamedPattern>>>>
+        ]>>
+      ]
+      [
+        "Pattern"
+        <ref [] Pattern>
+      ]
+    ]>
+    Definitions: <dictof <atom Symbol> <ref [] Definition>>
+    DictionaryEntries: <dictof any <ref [] NamedSimplePattern>>
+    EmbeddedTypeName: <or [
+      [
+        "false"
+        <lit #f>
+      ]
+      [
+        "Ref"
+        <ref [] Ref>
+      ]
+    ]>
+    ModulePath: <seqof <atom Symbol>>
+    Modules: <dictof <ref [] ModulePath> <ref [] Schema>>
+    NamedAlternative: <tuple [
+      <named variantLabel <atom String>>
+      <named pattern <ref [] Pattern>>
+    ]>
+    NamedPattern: <or [
+      [
+        "named"
+        <ref [] Binding>
+      ]
+      [
+        "anonymous"
+        <ref [] Pattern>
+      ]
+    ]>
+    NamedSimplePattern: <or [
+      [
+        "named"
+        <ref [] Binding>
+      ]
+      [
+        "anonymous"
+        <ref [] SimplePattern>
+      ]
+    ]>
+    Pattern: <or [
+      [
+        "SimplePattern"
+        <ref [] SimplePattern>
+      ]
+      [
+        "CompoundPattern"
+        <ref [] CompoundPattern>
+      ]
+    ]>
+    Ref: <rec <lit ref> <tuple [
+      <named module <ref [] ModulePath>>
+      <named name <atom Symbol>>
+    ]>>
+    Schema: <rec <lit schema> <tuple [
+      <dict {
+        definitions: <named definitions <ref [] Definitions>>
+        embeddedType: <named embeddedType <ref [] EmbeddedTypeName>>
+        version: <named version <ref [] Version>>
+      }>
+    ]>>
+    SimplePattern: <or [
+      [
+        "any"
+        <lit any>
+      ]
+      [
+        "atom"
+        <rec <lit atom> <tuple [
+          <named atomKind <ref [] AtomKind>>
+        ]>>
+      ]
+      [
+        "embedded"
+        <rec <lit embedded> <tuple [
+          <named interface <ref [] SimplePattern>>
+        ]>>
+      ]
+      [
+        "lit"
+        <rec <lit lit> <tuple [
+          <named value any>
+        ]>>
+      ]
+      [
+        "seqof"
+        <rec <lit seqof> <tuple [
+          <named pattern <ref [] SimplePattern>>
+        ]>>
+      ]
+      [
+        "setof"
+        <rec <lit setof> <tuple [
+          <named pattern <ref [] SimplePattern>>
+        ]>>
+      ]
+      [
+        "dictof"
+        <rec <lit dictof> <tuple [
+          <named key <ref [] SimplePattern>>
+          <named value <ref [] SimplePattern>>
+        ]>>
+      ]
+      [
+        "Ref"
+        <ref [] Ref>
+      ]
+    ]>
+    Version: <lit 1>
+  }
+  embeddedType: #f
+  version: 1
+}>

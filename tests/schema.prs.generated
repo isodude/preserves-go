@@ -1,0 +1,87 @@
+embeddedType #f .
+version 1 .
+
+AtomKind = 
+  /
+  =Boolean
+  /
+  =Double
+  /
+  =SignedInteger
+  /
+  =String
+  /
+  =ByteString
+  /
+  =Symbol .
+Binding = <named @name symbol @pattern SimplePattern>.
+Bundle = <bundle @modules Modules>.
+CompoundPattern = 
+  /
+  <rec @label NamedPattern @fields NamedPattern>
+  /
+  <tuple @patterns [NamedPattern ...]>
+  /
+  <tuplePrefix @fixed [NamedPattern ...] @variable NamedSimplePattern>
+  /
+  <dict @entries DictionaryEntries>.
+Definition = 
+  /
+  <or [
+        @pattern0 NamedAlternative
+        @pattern1 NamedAlternative @patternN NamedAlternative ...]>
+  /
+  <and [
+        @pattern0 NamedPattern
+        @pattern1 NamedPattern @patternN NamedPattern ...]>
+  /
+  Pattern .
+Definitions = { symbol: Definition ...:... }.
+DictionaryEntries = { any: NamedSimplePattern ...:... }.
+EmbeddedTypeName = 
+  /
+  @false #f
+  /
+  Ref .
+ModulePath = [symbol ...].
+Modules = { ModulePath: Schema ...:... }.
+NamedAlternative = [@variantLabel string @pattern Pattern].
+NamedPattern = 
+  /
+  @named Binding
+  /
+  @anonymous Pattern .
+NamedSimplePattern = 
+  /
+  @named Binding
+  /
+  @anonymous SimplePattern .
+Pattern = 
+  /
+  SimplePattern
+  /
+  CompoundPattern .
+Ref = <ref @module ModulePath @name symbol>.
+Schema = <schema {
+      definitions: @definitions Definitions
+      embeddedType: @embeddedType EmbeddedTypeName
+      version: @version Version
+    }>.
+SimplePattern = 
+  /
+  =any
+  /
+  <atom @atomKind AtomKind>
+  /
+  <embedded @interface SimplePattern>
+  /
+  <lit @value any>
+  /
+  <seqof @pattern SimplePattern>
+  /
+  <setof @pattern SimplePattern>
+  /
+  <dictof @key SimplePattern @value SimplePattern>
+  /
+  Ref .
+Version = 1 .
