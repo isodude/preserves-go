@@ -78,10 +78,40 @@ func MapToCallFunc(m map[string]ObjectType, key string) *ast.Ident {
 }
 func EncodeToGoAST(name string, e Encoder) string {
 	asts := e.EncodeToGoAST(nil, name)
-	asts = append(asts, []AST{&Boolean{}, &SignedInteger{}, &Pstring{}, &Symbol{}, &Value{}}...)
+	return Encode(name, asts)
+}
+func EncodeMapping(name string, asts []AST) []ast.Decl {
 	m := make(map[string]AST)
 	for _, t := range asts {
 		m[strings.ToLower(t.GetName())] = t
+	}
+
+	var g func(AST)
+	g = func(a AST) {
+		switch b := a.(type) {
+		case *Struct:
+			for _, f := range b.ASTFields {
+				b.Fields = append(b.Fields, f.ASTField())
+			}
+		case *Definition:
+			for _, f := range b.ASTFields {
+				b.Fields = append(b.Fields, f.ASTField())
+			}
+			for _, ast := range b.ASTs {
+				g(ast)
+			}
+		case *Union:
+			for _, ast := range b.ASTs {
+				g(ast)
+			}
+		case *Passthrough:
+			for _, ast := range b.ASTs {
+				g(ast)
+			}
+		}
+	}
+	for _, ast := range asts {
+		g(ast)
 	}
 
 	var f func(AST, string, ObjectType, bool)
@@ -100,10 +130,12 @@ func EncodeToGoAST(name string, e Encoder) string {
 		case *Passthrough:
 			if strings.ToLower(b.Object) == name {
 				b.ObjectType = o
-				//if c, ok := obj.(*Union); ok {
-				//	b.ASTs = append(b.ASTs, c.ASTs...)
-				//}
 			}
+			if b.mapFieldsToType == nil {
+				b.mapFieldsToType = make(map[string]ObjectType)
+			}
+			b.mapFieldsToType[strings.ToLower(name)] = o
+		case *Definition:
 			if b.mapFieldsToType == nil {
 				b.mapFieldsToType = make(map[string]ObjectType)
 			}
@@ -166,9 +198,15 @@ func EncodeToGoAST(name string, e Encoder) string {
 		ts = append(ts, v.AST(nil)...)
 	}
 
+	return ts
+}
+
+func Encode(name string, asts []AST) string {
+	asts = append(asts, []AST{&Boolean{}, &SignedInteger{}, &Pstring{}, &Symbol{}, &Value{}}...)
+
 	astFile := &ast.File{
 		Name:  ast.NewIdent("beep"),
-		Decls: ts,
+		Decls: EncodeMapping(name, asts),
 	}
 	fset := token.NewFileSet()
 	var bytes bytes.Buffer

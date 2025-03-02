@@ -300,9 +300,15 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 	if firstStmt != nil {
 		body.List = []ast.Stmt{firstStmt}
 	} else {
-		body.List = []ast.Stmt{&ast.ReturnStmt{
-			Results: []ast.Expr{ast.NewIdent("hello")},
-		}}
+		body.List = []ast.Stmt{
+			&ast.ExprStmt{X: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: "// The variables of the struct do not have a corresponding ToPreserves/FromPreserves",
+			}},
+			&ast.ReturnStmt{
+				Results: []ast.Expr{ast.NewIdent("nil")},
+			},
+		}
 	}
 	var ifStmt ast.Stmt
 	ifStmt = &ast.IfStmt{

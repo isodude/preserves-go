@@ -35,6 +35,7 @@ const (
 	StructRecType
 	FirstArrayType
 	LastArrayType
+	LitType
 	AllSameTypeArrayType
 	StructSeqofType
 	StructTupleType

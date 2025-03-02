@@ -14,17 +14,30 @@ import (
 type Struct struct {
 	Name            string
 	Fields          []*ast.Field
+	ASTFields       []*Field
 	Identifier      []AST
+	Value           preserves.Value
 	Kind            ObjectType
 	StructKind      ObjectType
 	mapFieldsToType map[string]ObjectType
 	MapKeyToField   []preserves.Value
 }
 
+func NewStruct(name string) *Struct {
+	return &Struct{Name: name}
+}
+
+func (s *Struct) SetValue(v preserves.Value) {
+	s.StructKind = LitType
+	s.Value = v
+}
 func (s *Struct) GetObjectType() ObjectType {
 	return StructObjectType
 }
 func (s *Struct) Under(_ AST) {}
+func (s *Struct) AddField(a *Field) {
+	s.ASTFields = append(s.ASTFields, a)
+}
 func (s *Struct) GetName() string {
 	return s.Name
 }
@@ -175,6 +188,11 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 	}
 
 	switch s.StructKind {
+	case LitType:
+		decl = append(decl, (&Lit{
+			Name: s.Name,
+			Type: s.Value,
+		}).AST(above)...)
 	case StructRecType:
 		decl = append(decl, (&Rec{
 			Name:            s.Name,
