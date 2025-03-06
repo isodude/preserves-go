@@ -141,6 +141,9 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
 	}
 	var b bytes.Buffer
+	if l.Type == nil {
+		panic(fmt.Sprintf("type in lit %s was nil", name))
+	}
 	_, err := text.FromPreserves(l.Type).WriteTo(&b)
 	if err != nil {
 		fmt.Printf("err: %s\n", err)
@@ -149,43 +152,63 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	//field := b.String()
 	//var fieldType ast.Expr
 	//fieldType = ast.NewIdent(fmt.Sprintf("\"%s\"", field))
-	decl = append(decl, &ast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: ast.NewIdent(name),
-				Type: &ast.StructType{
-					Fields: &ast.FieldList{},
+	if above == nil {
+		decl = append(decl, &ast.GenDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via lit\n",
+					},
 				},
 			},
-		},
-	})
-	sname := &ast.StarExpr{X: ast.NewIdent(name)}
-	if above != nil {
-		decl = append(decl,
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						}},
+			Tok: token.TYPE,
+			Specs: []ast.Spec{
+				&ast.TypeSpec{
+					Name: ast.NewIdent(name),
+					Type: &ast.StructType{
+						Fields: &ast.FieldList{},
+					},
 				},
-				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
-				Type: &ast.FuncType{
-					Func:   token.Pos(token.FUNC),
-					Params: &ast.FieldList{},
-				},
-				Body: &ast.BlockStmt{},
-			})
+			},
+		})
+		sname := &ast.StarExpr{X: ast.NewIdent(name)}
+		if above != nil {
+			decl = append(decl,
+				&ast.FuncDecl{
+					Doc: &ast.CommentGroup{
+						List: []*ast.Comment{
+							{
+								Text: "// Generated via lit\n",
+							},
+						},
+					},
+					Recv: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{},
+								Type:  sname,
+							}},
+					},
+					Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{},
+					},
+					Body: &ast.BlockStmt{},
+				})
+		}
 	}
-
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via lit\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 
 					List: []*ast.Field{{
@@ -220,9 +243,15 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via lit\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{

@@ -26,6 +26,18 @@ type Struct struct {
 func NewStruct(name string) *Struct {
 	return &Struct{Name: name}
 }
+func (s *Struct) Stmt(key ast.Expr, stmts []ast.Stmt) ast.Stmt {
+	if u, ok := s.GetStructKind().(Stmt); ok {
+		return u.Stmt(key, stmts)
+	}
+	panic("should not be reached")
+}
+func (s *Struct) ToStmt(key ast.Expr) []ast.Expr {
+	if u, ok := s.GetStructKind().(ToStmt); ok {
+		return u.ToStmt(key)
+	}
+	panic("should not be reached")
+}
 
 func (s *Struct) SetValue(v preserves.Value) {
 	s.StructKind = LitType
@@ -49,6 +61,66 @@ func (s *Struct) SetKind(o ObjectType) {
 }
 func (s *Struct) SetStructKind(o ObjectType) {
 	s.StructKind = o
+}
+func (s *Struct) GetStructKind() AST {
+	switch s.StructKind {
+	case LitType:
+		return &Lit{
+			Name: s.Name,
+			Type: s.Value,
+		}
+	case StructRecType:
+		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+		return &Rec{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+			identifier:      s.Identifier,
+		}
+	case StructDictType:
+		return &StructDict{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+			mapKeyToField:   s.MapKeyToField,
+			identifier:      s.Identifier,
+		}
+	case FirstArrayType:
+		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+	case LastArrayType:
+		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+	case AllSameTypeArrayType:
+		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+	case TupleType:
+		return &Tuple{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+			identifier:      s.Identifier,
+		}
+	case StructTupleType:
+		return &StructTuple{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+			identifier:      s.Identifier,
+		}
+	case StructTuplePrefixType:
+		return &TuplePrefix{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+			identifier:      s.Identifier,
+		}
+	case StructSeqofType:
+		return &Seqof{
+			Name:            s.Name,
+			Fields:          s.Fields,
+			mapFieldsToType: s.mapFieldsToType,
+		}
+	default:
+		panic(fmt.Sprintf("%s: %d", s.Name, s.StructKind))
+	}
 }
 
 /*
@@ -86,6 +158,13 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 		})
 	}
 	decl = append(decl, &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via struct\n",
+				},
+			},
+		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -101,6 +180,9 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 	var smallFields []*ast.Field
 	for _, field := range fields {
 		if len(field.Names) < 1 {
+			continue
+		}
+		if len(field.Names[0].Name) < 2 {
 			continue
 		}
 		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
@@ -120,6 +202,9 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 		if len(field.Names) < 1 {
 			continue
 		}
+		if len(field.Names[0].Name) < 2 {
+			continue
+		}
 		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
 		switch fname {
 		case "interface":
@@ -135,9 +220,15 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via struct\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: smallFields,
 				},
@@ -171,6 +262,13 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		decl = append(decl,
 			&ast.FuncDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Generated via struct\n",
+						},
+					},
+				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -180,60 +278,13 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 				},
 				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
 				Type: &ast.FuncType{
-					Func:   token.Pos(token.FUNC),
 					Params: &ast.FieldList{},
 				},
 				Body: &ast.BlockStmt{},
 			})
 	}
 
-	switch s.StructKind {
-	case LitType:
-		decl = append(decl, (&Lit{
-			Name: s.Name,
-			Type: s.Value,
-		}).AST(above)...)
-	case StructRecType:
-		decl = append(decl, (&Rec{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-			identifier:      s.Identifier,
-		}).AST(above)...)
-	case StructDictType:
-		decl = append(decl, (&StructDict{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-			mapKeyToField:   s.MapKeyToField,
-			identifier:      s.Identifier,
-		}).AST(above)...)
-	case FirstArrayType:
-	case LastArrayType:
-	case AllSameTypeArrayType:
-	case StructTupleType:
-		decl = append(decl, (&StructTuple{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-			identifier:      s.Identifier,
-		}).AST(above)...)
-	case StructTuplePrefixType:
-		decl = append(decl, (&TuplePrefix{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-			identifier:      s.Identifier,
-		}).AST(above)...)
-	case StructSeqofType:
-		decl = append(decl, (&Seqof{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-		}).AST(above)...)
-	default:
-		panic("beep")
-	}
+	decl = append(decl, s.GetStructKind().AST(above)...)
 
 	return
 }

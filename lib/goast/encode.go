@@ -6,6 +6,8 @@ import (
 	"go/ast"
 	"go/printer"
 	"go/token"
+	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -91,10 +93,31 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 		switch b := a.(type) {
 		case *Struct:
 			for _, f := range b.ASTFields {
+				if f.Dict {
+					for i, c := range asts {
+						if c == a {
+							n := f.ConvertToMap(a)
+							asts[i] = n
+							m[strings.ToLower(n.GetName())] = n
+						}
+					}
+
+					continue
+				}
 				b.Fields = append(b.Fields, f.ASTField())
 			}
 		case *Definition:
 			for _, f := range b.ASTFields {
+				if f.Dict {
+					for i, c := range asts {
+						if c == a {
+							n := f.ConvertToMap(a)
+							asts[i] = n
+							m[strings.ToLower(n.GetName())] = n
+						}
+					}
+					continue
+				}
 				b.Fields = append(b.Fields, f.ASTField())
 			}
 			for _, ast := range b.ASTs {
@@ -108,6 +131,15 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 			for _, ast := range b.ASTs {
 				g(ast)
 			}
+		case *Boolean:
+		case *SignedInteger:
+		case *Pstring:
+		case *Symbol:
+		case *Value:
+		case *Map:
+		case *Field:
+		default:
+			panic(fmt.Sprintf("did not process %v", reflect.TypeOf(a)))
 		}
 	}
 	for _, ast := range asts {
@@ -136,6 +168,9 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 			}
 			b.mapFieldsToType[strings.ToLower(name)] = o
 		case *Definition:
+			for _, c := range b.ASTs {
+				f(c, name, o, again)
+			}
 			if b.mapFieldsToType == nil {
 				b.mapFieldsToType = make(map[string]ObjectType)
 			}
@@ -161,6 +196,14 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 				b.mapFieldsToType = make(map[string]ObjectType)
 			}
 			b.mapFieldsToType[strings.ToLower(name)] = o
+		case *Boolean:
+		case *SignedInteger:
+		case *Pstring:
+		case *Symbol:
+		case *Value:
+		case *Field:
+		default:
+			panic(fmt.Sprintf("did not process %v", reflect.TypeOf(a)))
 		}
 	}
 	for k, v := range m {
@@ -194,7 +237,13 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 		},
 	}
 
-	for _, v := range asts {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	for _, k := range keys {
+		v := m[k]
 		ts = append(ts, v.AST(nil)...)
 	}
 

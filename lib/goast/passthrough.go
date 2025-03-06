@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"reflect"
 	"strings"
 
 	"golang.org/x/text/cases"
@@ -16,6 +17,10 @@ type Passthrough struct {
 	ObjectType      ObjectType
 	ASTs            []AST
 	mapFieldsToType map[string]ObjectType
+}
+
+func NewPassthrough(name string) *Passthrough {
+	return &Passthrough{Name: name}
 }
 
 type ObjectType int
@@ -46,6 +51,9 @@ const (
 	SimplePstringType
 	ValueType
 	TupleType
+	ArrayField
+	SetField
+	DictField
 )
 
 func (p *Passthrough) GetObjectType() ObjectType {
@@ -83,9 +91,15 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via passthrough\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{{
 						Names: []*ast.Ident{ast.NewIdent("obj")},
@@ -125,6 +139,13 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		decl = append(decl,
 			&ast.FuncDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Generated via passthrough\n",
+						},
+					},
+				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -134,7 +155,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 				},
 				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
 				Type: &ast.FuncType{
-					Func:   token.Pos(token.FUNC),
 					Params: &ast.FieldList{},
 				},
 				Body: &ast.BlockStmt{},
@@ -178,17 +198,23 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	case SimplePstringType:
 		dVarName = &ast.StarExpr{X: varName}
 	case InvalidObjectType:
-		panic(fmt.Sprintf("could not find %s", p.Object))
+		panic(fmt.Sprintf("could not find %s, %v", p.Object, reflect.TypeOf(p.ObjectType)))
 	default:
 		dVarName = varName
 	}
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via passthrough\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 
 					List: []*ast.Field{{
@@ -259,9 +285,15 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	)
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via passthrough\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{

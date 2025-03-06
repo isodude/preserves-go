@@ -62,6 +62,13 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 		})
 	}
 	decl = append(decl, &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via tuple\n",
+				},
+			},
+		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -111,9 +118,15 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via tuple\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: smallFields,
 				},
@@ -147,6 +160,13 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		decl = append(decl,
 			&ast.FuncDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Generated via tuple\n",
+						},
+					},
+				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -156,7 +176,6 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 				},
 				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
 				Type: &ast.FuncType{
-					Func:   token.Pos(token.FUNC),
 					Params: &ast.FieldList{},
 				},
 				Body: &ast.BlockStmt{},
@@ -390,9 +409,15 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via tuple\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -450,9 +475,15 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via tuple\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{

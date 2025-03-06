@@ -257,9 +257,15 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via struct_tuple_prefix\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -362,9 +368,15 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via struct_tuple_prefix\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{

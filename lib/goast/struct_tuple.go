@@ -66,7 +66,9 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 		var stmt ast.Stmt
 		var callExprFun *ast.Ident
 		fieldName := field.Names[0].String()
-		fieldName = fmt.Sprintf("%s%s", strings.ToUpper(string(fieldName[0])), fieldName[1:])
+		if len(fieldName) > 0 {
+			fieldName = fmt.Sprintf("%s%s", strings.ToUpper(string(fieldName[0])), fieldName[1:])
+		}
 		var fieldType string
 		switch t := field.Type.(type) {
 		case *ast.ArrayType:
@@ -303,7 +305,7 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 		body.List = []ast.Stmt{
 			&ast.ExprStmt{X: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: "// The variables of the struct do not have a corresponding ToPreserves/FromPreserves",
+				Value: fmt.Sprintf("// The variables of the struct do not have a corresponding ToPreserves/FromPreserves: %v", t.mapFieldsToType),
 			}},
 			&ast.ReturnStmt{
 				Results: []ast.Expr{ast.NewIdent("nil")},
@@ -352,74 +354,79 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 			}, body.List)
 		}
 	}
-	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
-			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{ast.NewIdent("value")},
-							Type:  ast.NewIdent("Value"),
-						},
-					},
+	decl = append(decl, &ast.FuncDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via struct_tuple\n",
 				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						},
+			},
+		},
+		Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("value")},
+						Type:  ast.NewIdent("Value"),
 					},
 				},
 			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.IfStmt{
-						Init: &ast.AssignStmt{
-							Tok: token.DEFINE,
-							Lhs: []ast.Expr{
-								ast.NewIdent("rec"),
-								ast.NewIdent("ok"),
-							},
-							Rhs: []ast.Expr{
-								&ast.TypeAssertExpr{
-									X:    ast.NewIdent("value"),
-									Type: &ast.StarExpr{X: ast.NewIdent("Record")},
-								},
-							},
-						},
-						Cond: &ast.BinaryExpr{
-							Op: token.LAND,
-							X:  ast.NewIdent("ok"),
-							Y: &ast.BinaryExpr{
-								Op: token.EQL,
-								X: &ast.CallExpr{
-									Fun: ast.NewIdent("len"),
-									Args: []ast.Expr{
-										&ast.SelectorExpr{
-											X:   ast.NewIdent("rec"),
-											Sel: ast.NewIdent("Fields"),
-										},
-									},
-								},
-								Y: ast.NewIdent(strconv.Itoa(len(t.Fields))),
-							},
-						},
-						Body: &ast.BlockStmt{
-							List: []ast.Stmt{
-								ifStmt,
-							},
-						},
-					},
-					&ast.ReturnStmt{
-						Results: []ast.Expr{ast.NewIdent("nil")},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{},
+						Type:  sname,
 					},
 				},
 			},
 		},
-	)
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.IfStmt{
+					Init: &ast.AssignStmt{
+						Tok: token.DEFINE,
+						Lhs: []ast.Expr{
+							ast.NewIdent("rec"),
+							ast.NewIdent("ok"),
+						},
+						Rhs: []ast.Expr{
+							&ast.TypeAssertExpr{
+								X:    ast.NewIdent("value"),
+								Type: &ast.StarExpr{X: ast.NewIdent("Record")},
+							},
+						},
+					},
+					Cond: &ast.BinaryExpr{
+						Op: token.LAND,
+						X:  ast.NewIdent("ok"),
+						Y: &ast.BinaryExpr{
+							Op: token.EQL,
+							X: &ast.CallExpr{
+								Fun: ast.NewIdent("len"),
+								Args: []ast.Expr{
+									&ast.SelectorExpr{
+										X:   ast.NewIdent("rec"),
+										Sel: ast.NewIdent("Fields"),
+									},
+								},
+							},
+							Y: ast.NewIdent(strconv.Itoa(len(t.Fields))),
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							ifStmt,
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{ast.NewIdent("nil")},
+				},
+			},
+		},
+	})
+
 	/*
 	   func RefToPreserves(r Ref) Value {
 	   	return &Record{Key: NewSymbol("ref"), Fields: []Value{ModulePathToPreserves(r.Module), SymbolToPreserves(r.Name)}}
@@ -428,9 +435,15 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via struct_tuple\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{

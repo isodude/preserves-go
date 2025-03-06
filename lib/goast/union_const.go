@@ -122,10 +122,16 @@ func (u *UnionConst) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via union_const\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 
 					List: []*ast.Field{{

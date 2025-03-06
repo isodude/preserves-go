@@ -26,6 +26,13 @@ func (*SeqofSymbol) SetKind(o ObjectType)       {}
 func (*SeqofSymbol) SetStructKind(o ObjectType) {}
 func (s *SeqofSymbol) AST(above AST) (decl []ast.Decl) {
 	decl = append(decl, &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via seqof_symbol\n",
+				},
+			},
+		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{

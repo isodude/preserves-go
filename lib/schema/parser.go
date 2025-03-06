@@ -46,7 +46,7 @@ var _document = NewBundle(NewModules().Add(*NewModulePath(),
 						NewNamedPatternAnonymous(NewPatternSimplePattern(NewSimplePatternLit(NewSymbol("tuplePrefix")))), NewNamedPatternAnonymous(NewPatternCompoundPattern(NewCompoundPatternTuple(
 							[]NamedPattern{
 								NewNamedPatternNamed(*NewBinding(*NewSymbol("fixed"), NewSimplePatternSeqof(NewSimplePatternRef(*NewRef(*NewModulePath(), *NewSymbol("NamedPattern")))))),
-								NewNamedPatternNamed(*NewBinding(*NewSymbol("variable"), NewSimplePatternRef(*NewRef(*NewModulePath(), *NewSymbol("NamedPattern"))))),
+								NewNamedPatternNamed(*NewBinding(*NewSymbol("variable"), NewSimplePatternRef(*NewRef(*NewModulePath(), *NewSymbol("NamedSimplePattern"))))),
 							},
 						))),
 					))),
@@ -120,6 +120,15 @@ var _document = NewBundle(NewModules().Add(*NewModulePath(),
 				*NewNamedAlternative("CompoundPattern", NewDefinitionPattern(NewPatternSimplePattern(NewSimplePatternRef(*NewRef(*NewModulePath(), *NewSymbol("CompoundPattern")))))),
 				[]NamedAlternative{},
 			)).
+			Add(*NewSymbol("Ref"), NewDefinitionPattern(NewPatternCompoundPattern(NewCompoundPatternRec(
+				NewNamedPatternAnonymous(NewPatternSimplePattern(NewSimplePatternLit(NewSymbol("ref")))),
+				NewNamedPatternAnonymous(NewPatternCompoundPattern(NewCompoundPatternTuple(
+					[]NamedPattern{
+						NewNamedPatternNamed(*NewBinding(*NewSymbol("module"), NewSimplePatternRef(*NewRef(*NewModulePath(), *NewSymbol("ModulePath"))))),
+						NewNamedPatternNamed(*NewBinding(*NewSymbol("name"), NewSimplePatternAtom(&AtomKindSymbol{}))),
+					},
+				))),
+			)))).
 			Add(*NewSymbol("Schema"), NewDefinitionPattern(NewPatternCompoundPattern(NewCompoundPatternRec(
 				NewNamedPatternAnonymous(NewPatternSimplePattern(NewSimplePatternLit(NewSymbol("schema")))),
 				NewNamedPatternAnonymous(NewPatternCompoundPattern(NewCompoundPatternTuple(

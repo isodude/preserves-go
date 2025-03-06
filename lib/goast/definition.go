@@ -3,6 +3,7 @@ package goast
 import (
 	"fmt"
 	"go/ast"
+	"strings"
 
 	"github.com/isodude/preserves-go/lib/preserves"
 	"golang.org/x/text/cases"
@@ -16,6 +17,8 @@ type Definition struct {
 	ASTFields       []*Field
 	Kind            *ObjectType
 	StructKind      *ObjectType
+	Value           preserves.Value
+	Identifier      []AST
 	mapFieldsToType map[string]ObjectType
 	MapKeyToField   []preserves.Value
 }
@@ -26,6 +29,10 @@ func NewDefinition(name string) *Definition {
 	}
 }
 
+func (d *Definition) SetValue(v preserves.Value) {
+	d.StructKind = &([]ObjectType{LitType}[0])
+	d.Value = v
+}
 func (d *Definition) GetObjectType() ObjectType {
 	/*allLit := true
 	oneLit := false
@@ -64,29 +71,53 @@ func (d *Definition) GetTitle() string {
 	return cases.Title(language.English, cases.NoLower).String(d.Name)
 }
 func (d *Definition) AST(above AST) (decl []ast.Decl) {
-	if d.StructKind != nil {
+	name := d.GetName()
+	if above != nil {
+		name = fmt.Sprintf("%s%s", above.GetName(), name)
+	}
+	if d.Kind == nil {
+		panic(fmt.Sprintf("d.Kind for %s is nil", name))
+	}
+	switch *d.Kind {
+	case PassthroughObjectType:
+		u := NewPassthrough(name)
+		u.ASTs = d.ASTs
+		for _, f := range d.ASTFields {
+			u.Object = f.Type
+			if t, ok := d.mapFieldsToType[strings.ToLower(f.Type)]; ok {
+				u.ObjectType = t
+			} else {
+				panic(fmt.Sprintf("could not find type %s in %v", strings.ToLower(f.Type), d.mapFieldsToType))
+			}
+		}
+		if d.Kind != nil {
+			u.ObjectType = *d.Kind
+		}
+		u.mapFieldsToType = d.mapFieldsToType
+		decl = append(decl, u.AST(nil)...)
+	case InterfaceObjectType:
+		unionInterface := NewUnionInterface(name)
+		unionInterface.ASTs = d.ASTs
+		unionInterface.mapFieldsToType = d.mapFieldsToType
+		decl = append(decl, unionInterface.AST(nil)...)
+	case StructObjectType:
+		if d.StructKind == nil {
+			panic(fmt.Sprintf("d.StructKind for %s is nil", name))
+		}
 		s := &Struct{
 			Name:            d.Name,
 			Fields:          d.Fields,
 			StructKind:      *d.StructKind,
 			mapFieldsToType: d.mapFieldsToType,
 			MapKeyToField:   d.MapKeyToField,
+			Identifier:      d.Identifier,
+			Value:           d.Value,
 		}
-		if d.Kind != nil {
-			s.Kind = *d.Kind
-		}
+		s.Kind = *d.Kind
 		decl = append(decl, s.AST(above)...)
-		return
+	default:
+		panic(fmt.Sprintf("kind %d is unknown", *d.Kind))
 	}
-
-	name := d.GetName()
-	if above != nil {
-		name = fmt.Sprintf("%s%s", above.GetName(), name)
-	}
-	unionInterface := NewUnionInterface(name)
-	unionInterface.ASTs = d.ASTs
-	unionInterface.mapFieldsToType = d.mapFieldsToType
-	decl = append(decl, unionInterface.AST(above)...)
 
 	return
 

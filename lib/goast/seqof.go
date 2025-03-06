@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -38,8 +39,19 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
 	}
-	elt := s.Fields[0].Type.(*ast.ArrayType).Elt
+	at, ok := s.Fields[0].Type.(*ast.ArrayType)
+	if !ok {
+		panic(fmt.Sprintf("field %v is not arraytype but rather %v", s.Fields[0].Names, reflect.TypeOf(s.Fields[0].Type)))
+	}
+	elt := at.Elt
 	decl = append(decl, &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via seqof\n",
+				},
+			},
+		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -51,9 +63,15 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via seqof\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -109,9 +127,15 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 	sname := &ast.StarExpr{X: ast.NewIdent(name)}
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via seqof\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -250,9 +274,15 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via seqof\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -318,6 +348,13 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via seqof\n",
+					},
+				},
+			},
 			Name: ast.NewIdent("Hash"),
 			Recv: &ast.FieldList{
 				List: []*ast.Field{
@@ -328,7 +365,6 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 				},
 			},
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -385,6 +421,13 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via seqof\n",
+					},
+				},
+			},
 			Name: ast.NewIdent("ToHash"),
 			Recv: &ast.FieldList{
 				List: []*ast.Field{
@@ -395,7 +438,6 @@ func (s *Seqof) AST(above AST) (decl []ast.Decl) {
 				},
 			},
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{

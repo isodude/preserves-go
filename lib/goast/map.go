@@ -14,7 +14,6 @@ type Map struct {
 	Name            string
 	Key             string
 	Value           string
-	Union           string
 	mapFieldsToType map[string]ObjectType
 }
 
@@ -68,6 +67,13 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	}
 	sValue = ast.NewIdent(value)
 	decl = append(decl, &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Generated via map\n",
+				},
+			},
+		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -99,9 +105,15 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via map\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -127,6 +139,13 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	if above != nil && above.GetObjectType() == UnionInterfaceObjectType {
 		decl = append(decl,
 			&ast.FuncDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Generated via map\n",
+						},
+					},
+				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -136,7 +155,6 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 				},
 				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetTitle())),
 				Type: &ast.FuncType{
-					Func:   token.Pos(token.FUNC),
 					Params: &ast.FieldList{},
 				},
 				Body: &ast.BlockStmt{},
@@ -175,9 +193,15 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via map\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -328,9 +352,15 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: "// Generated via map\n",
+					},
+				},
+			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
-				Func: token.Pos(token.FUNC),
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
