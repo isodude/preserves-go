@@ -28,6 +28,7 @@ type ObjectType int
 const (
 	InvalidObjectType ObjectType = iota
 
+	DefinitionObjectType
 	InterfaceObjectType
 	PassthroughObjectType
 	UnionInterfaceObjectType

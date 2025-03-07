@@ -34,22 +34,16 @@ func (d *Definition) SetValue(v preserves.Value) {
 	d.Value = v
 }
 func (d *Definition) GetObjectType() ObjectType {
-	/*allLit := true
-	oneLit := false
-	for _, a := range u.ASTs {
-		if _, ok := a.(*Lit); !ok {
-			allLit = false
-		} else {
-			oneLit = true
+	if len(d.ASTs) == 1 {
+		return d.ASTs[0].GetObjectType()
+	}
+	if d.Kind != nil {
+		if *d.Kind == StructObjectType {
+			return *d.StructKind
 		}
+		return *d.Kind
 	}
-	if allLit {
-		return UnionConstObjectType
-	}
-	if oneLit {
-		return UnionVariantObjectType
-	}*/
-	return UnionInterfaceObjectType
+	return DefinitionObjectType
 }
 
 func (d *Definition) Under(a AST) {
@@ -105,7 +99,7 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 			panic(fmt.Sprintf("d.StructKind for %s is nil", name))
 		}
 		s := &Struct{
-			Name:            d.Name,
+			Name:            name,
 			Fields:          d.Fields,
 			StructKind:      *d.StructKind,
 			mapFieldsToType: d.mapFieldsToType,

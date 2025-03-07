@@ -44,6 +44,9 @@ func (s *Struct) SetValue(v preserves.Value) {
 	s.Value = v
 }
 func (s *Struct) GetObjectType() ObjectType {
+	if u, ok := s.GetStructKind().(AST); ok {
+		return u.GetObjectType()
+	}
 	return StructObjectType
 }
 func (s *Struct) Under(_ AST) {}
@@ -157,69 +160,9 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 			Type:  nameType,
 		})
 	}
-	decl = append(decl, &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "// Generated via struct\n",
-				},
-			},
-		},
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: ast.NewIdent(name),
-				Type: &ast.StructType{
-					Fields: &ast.FieldList{
-						List: fields,
-					},
-				},
-			},
-		},
-	})
-	var smallFields []*ast.Field
-	for _, field := range fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-		if len(field.Names[0].Name) < 2 {
-			continue
-		}
-		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-		switch fname {
-		case "interface":
-			fallthrough
-		case "any":
-			fname = fmt.Sprintf("_%s", fname)
-		}
-		smallFields = append(smallFields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(fname)},
-			Type:  field.Type,
-		})
-	}
-	var smallValues []ast.Expr
-	for _, field := range fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-		if len(field.Names[0].Name) < 2 {
-			continue
-		}
-		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-		switch fname {
-		case "interface":
-			fallthrough
-		case "any":
-			fname = fmt.Sprintf("_%s", fname)
-		}
-		smallValues = append(smallValues, &ast.KeyValueExpr{
-			Key:   field.Names[0],
-			Value: ast.NewIdent(fname),
-		})
-	}
 
-	decl = append(decl,
-		&ast.FuncDecl{
+	if s.StructKind != StructSeqofType {
+		decl = append(decl, &ast.GenDecl{
 			Doc: &ast.CommentGroup{
 				List: []*ast.Comment{
 					{
@@ -227,39 +170,59 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 					},
 				},
 			},
-			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: smallFields,
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  &ast.StarExpr{X: ast.NewIdent(name)},
+			Tok: token.TYPE,
+			Specs: []ast.Spec{
+				&ast.TypeSpec{
+					Name: ast.NewIdent(name),
+					Type: &ast.StructType{
+						Fields: &ast.FieldList{
+							List: fields,
 						},
 					},
 				},
 			},
-			Body: &ast.BlockStmt{List: []ast.Stmt{
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: ast.NewIdent(name),
-								Elts: smallValues,
-							},
-						},
-					},
-				},
-			},
-			},
-		},
-	)
+		})
+		var smallFields []*ast.Field
+		for _, field := range fields {
+			if len(field.Names) < 1 {
+				continue
+			}
+			if len(field.Names[0].Name) < 2 {
+				continue
+			}
+			fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
+			switch fname {
+			case "interface":
+				fallthrough
+			case "any":
+				fname = fmt.Sprintf("_%s", fname)
+			}
+			smallFields = append(smallFields, &ast.Field{
+				Names: []*ast.Ident{ast.NewIdent(fname)},
+				Type:  field.Type,
+			})
+		}
+		var smallValues []ast.Expr
+		for _, field := range fields {
+			if len(field.Names) < 1 {
+				continue
+			}
+			if len(field.Names[0].Name) < 2 {
+				continue
+			}
+			fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
+			switch fname {
+			case "interface":
+				fallthrough
+			case "any":
+				fname = fmt.Sprintf("_%s", fname)
+			}
+			smallValues = append(smallValues, &ast.KeyValueExpr{
+				Key:   field.Names[0],
+				Value: ast.NewIdent(fname),
+			})
+		}
 
-	sname := &ast.StarExpr{X: ast.NewIdent(name)}
-	if above != nil {
 		decl = append(decl,
 			&ast.FuncDecl{
 				Doc: &ast.CommentGroup{
@@ -269,19 +232,62 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 						},
 					},
 				},
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						}},
-				},
-				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
+				Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 				Type: &ast.FuncType{
-					Params: &ast.FieldList{},
+					Params: &ast.FieldList{
+						List: smallFields,
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{},
+								Type:  &ast.StarExpr{X: ast.NewIdent(name)},
+							},
+						},
+					},
 				},
-				Body: &ast.BlockStmt{},
-			})
+				Body: &ast.BlockStmt{List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X: &ast.CompositeLit{
+									Type: ast.NewIdent(name),
+									Elts: smallValues,
+								},
+							},
+						},
+					},
+				},
+				},
+			},
+		)
+
+		sname := &ast.StarExpr{X: ast.NewIdent(name)}
+		if above != nil {
+			decl = append(decl,
+				&ast.FuncDecl{
+					Doc: &ast.CommentGroup{
+						List: []*ast.Comment{
+							{
+								Text: "// Generated via struct\n",
+							},
+						},
+					},
+					Recv: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{},
+								Type:  sname,
+							}},
+					},
+					Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{},
+					},
+					Body: &ast.BlockStmt{},
+				})
+		}
 	}
 
 	decl = append(decl, s.GetStructKind().AST(above)...)

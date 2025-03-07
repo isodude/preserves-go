@@ -51,11 +51,11 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
 	}
 	key := m.Key
-	if m.Key == "any" {
+	if strings.ToLower(m.Key) == "any" {
 		key = "Value"
 	}
 	value := m.Value
-	if m.Value == "any" {
+	if strings.ToLower(m.Value) == "any" {
 		value = "Value"
 	}
 	var sKey, sValue ast.Expr
@@ -165,7 +165,7 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	if callFuncKeyExpr == nil || callFuncValueExpr == nil {
 		return
 	}
-	o, ok := m.mapFieldsToType[strings.ToLower(key)]
+	kType, ok := m.mapFieldsToType[strings.ToLower(key)]
 	if !ok {
 		return
 	}
@@ -174,13 +174,13 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	var toKey ast.Expr
 	dKey = ast.NewIdent("dKey")
 	toKey = ast.NewIdent("dKey")
-	if o == StructSeqofType {
+	if kType == StructSeqofType {
 		dKey = &ast.CallExpr{Fun: &ast.SelectorExpr{X: dKey, Sel: ast.NewIdent("ToHash")}}
 		toKey = &ast.CallExpr{Fun: &ast.SelectorExpr{X: toKey, Sel: ast.NewIdent("FromHash")}}
-	} else if o != UnionInterfaceObjectType && o != MapObjectType && o != ValueType {
+	} else if kType != UnionInterfaceObjectType && kType != MapObjectType && kType != ValueType {
 		dKey = &ast.StarExpr{X: dKey}
 	}
-	o, ok = m.mapFieldsToType[strings.ToLower(m.Value)]
+	o, ok := m.mapFieldsToType[strings.ToLower(m.Value)]
 	if !ok {
 		return
 	}
