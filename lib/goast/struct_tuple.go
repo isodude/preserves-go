@@ -126,7 +126,7 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 		varName := ast.NewIdent(fmt.Sprintf("p%d", i))
 
 		var dVarName ast.Expr
-		if o == UnionInterfaceObjectType {
+		if o == UnionInterfaceObjectType || o == InterfaceObjectType {
 			dVarName = varName
 		} else if o == ValueType {
 			dVarName = varName
@@ -355,13 +355,6 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 		}
 	}
 	decl = append(decl, &ast.FuncDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "// Generated via struct_tuple\n",
-				},
-			},
-		},
 		Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -435,13 +428,6 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct_tuple\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

@@ -152,7 +152,7 @@ func (d *StructDict) AST(above AST) (decl []ast.Decl) {
 		}
 		var dVarName ast.Expr
 		dVarName = varName
-		if o != UnionInterfaceObjectType {
+		if !(o == UnionInterfaceObjectType || o == InterfaceObjectType) {
 			dVarName = &ast.StarExpr{X: varName}
 		}
 		/*
@@ -303,13 +303,6 @@ func (d *StructDict) AST(above AST) (decl []ast.Decl) {
 	keyValues = append(keyValues, &ast.KeyValueExpr{Key: ast.NewIdent("Fields"), Value: &ast.ArrayType{Elt: &ast.CompositeLit{Type: ast.NewIdent("Value"), Elts: []ast.Expr{&ast.UnaryExpr{Op: token.AND, X: &ast.CompositeLit{Type: ast.NewIdent("Dictionary"), Elts: toElements}}}}}})
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct_dict\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
@@ -387,13 +380,6 @@ func (d *StructDict) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct_dict\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

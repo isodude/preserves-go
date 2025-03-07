@@ -58,7 +58,7 @@ const (
 )
 
 func (p *Passthrough) GetObjectType() ObjectType {
-	return PassthroughObjectType
+	return p.ObjectType
 }
 func (p *Passthrough) Under(a AST) {
 	p.ASTs = append(p.ASTs, a)
@@ -73,9 +73,9 @@ func (*Passthrough) SetKind(o ObjectType)       {}
 func (*Passthrough) SetStructKind(o ObjectType) {}
 func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	name := p.Name
-	if above != nil {
-		name = fmt.Sprintf("%s%s", above.GetName(), strToCamelCase(p.Name))
-	}
+	//	if above != nil {
+	//		name = fmt.Sprintf("%s%s", above.GetName(), strToCamelCase(p.Name))
+	//	}
 	decl = append(decl, &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
@@ -92,13 +92,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via passthrough\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
@@ -140,13 +133,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		decl = append(decl,
 			&ast.FuncDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "// Generated via passthrough\n",
-						},
-					},
-				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -190,6 +176,8 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	switch p.ObjectType {
 	case StructObjectType:
 		fallthrough
+	case StructTupleType:
+		fallthrough
 	case SimpleStringType:
 		fallthrough
 	case SimpleBoolType:
@@ -206,13 +194,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via passthrough\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 
@@ -286,13 +267,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	)
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via passthrough\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

@@ -67,13 +67,6 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	}
 	sValue = ast.NewIdent(value)
 	decl = append(decl, &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "// Generated via map\n",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -105,13 +98,6 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via map\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 			Type: &ast.FuncType{
 				Results: &ast.FieldList{
@@ -136,16 +122,9 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 			},
 		},
 	)
-	if above != nil && above.GetObjectType() == UnionInterfaceObjectType {
+	if above != nil && (above.GetObjectType() == UnionInterfaceObjectType || above.GetObjectType() == InterfaceObjectType) {
 		decl = append(decl,
 			&ast.FuncDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "// Generated via map\n",
-						},
-					},
-				},
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
 						{
@@ -177,7 +156,7 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	if kType == StructSeqofType {
 		dKey = &ast.CallExpr{Fun: &ast.SelectorExpr{X: dKey, Sel: ast.NewIdent("ToHash")}}
 		toKey = &ast.CallExpr{Fun: &ast.SelectorExpr{X: toKey, Sel: ast.NewIdent("FromHash")}}
-	} else if kType != UnionInterfaceObjectType && kType != MapObjectType && kType != ValueType {
+	} else if !(kType == UnionInterfaceObjectType || kType == InterfaceObjectType) && kType != MapObjectType && kType != ValueType {
 		dKey = &ast.StarExpr{X: dKey}
 	}
 	o, ok := m.mapFieldsToType[strings.ToLower(m.Value)]
@@ -187,19 +166,12 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	var dValue ast.Expr
 	dValue = ast.NewIdent("dValue")
 
-	if o != UnionInterfaceObjectType && o != MapObjectType && o != ValueType {
+	if o != UnionInterfaceObjectType && o != MapObjectType && o != ValueType && o != InterfaceObjectType {
 		dValue = &ast.StarExpr{X: dValue}
 	}
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via map\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
@@ -352,13 +324,6 @@ func (m *Map) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via map\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

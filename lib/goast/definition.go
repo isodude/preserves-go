@@ -65,7 +65,7 @@ func (d *Definition) GetTitle() string {
 	return cases.Title(language.English, cases.NoLower).String(d.Name)
 }
 func (d *Definition) AST(above AST) (decl []ast.Decl) {
-	name := d.GetName()
+	name := d.GetTitle()
 	if above != nil {
 		name = fmt.Sprintf("%s%s", above.GetName(), name)
 	}
@@ -76,6 +76,9 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 	case PassthroughObjectType:
 		u := NewPassthrough(name)
 		u.ASTs = d.ASTs
+		if d.Kind != nil {
+			u.ObjectType = *d.Kind
+		}
 		for _, f := range d.ASTFields {
 			u.Object = f.Type
 			if t, ok := d.mapFieldsToType[strings.ToLower(f.Type)]; ok {
@@ -84,11 +87,8 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 				panic(fmt.Sprintf("could not find type %s in %v", strings.ToLower(f.Type), d.mapFieldsToType))
 			}
 		}
-		if d.Kind != nil {
-			u.ObjectType = *d.Kind
-		}
 		u.mapFieldsToType = d.mapFieldsToType
-		decl = append(decl, u.AST(nil)...)
+		decl = append(decl, u.AST(above)...)
 	case InterfaceObjectType:
 		unionInterface := NewUnionInterface(name)
 		unionInterface.ASTs = d.ASTs
@@ -99,7 +99,7 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 			panic(fmt.Sprintf("d.StructKind for %s is nil", name))
 		}
 		s := &Struct{
-			Name:            name,
+			Name:            d.Name,
 			Fields:          d.Fields,
 			StructKind:      *d.StructKind,
 			mapFieldsToType: d.mapFieldsToType,

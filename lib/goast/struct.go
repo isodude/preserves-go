@@ -161,15 +161,8 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 		})
 	}
 
-	if s.StructKind != StructSeqofType {
+	if !(s.StructKind == StructSeqofType || (s.StructKind == LitType && above == nil) || s.StructKind == TupleType) {
 		decl = append(decl, &ast.GenDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct\n",
-					},
-				},
-			},
 			Tok: token.TYPE,
 			Specs: []ast.Spec{
 				&ast.TypeSpec{
@@ -225,13 +218,6 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 
 		decl = append(decl,
 			&ast.FuncDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "// Generated via struct\n",
-						},
-					},
-				},
 				Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -267,13 +253,6 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 		if above != nil {
 			decl = append(decl,
 				&ast.FuncDecl{
-					Doc: &ast.CommentGroup{
-						List: []*ast.Comment{
-							{
-								Text: "// Generated via struct\n",
-							},
-						},
-					},
 					Recv: &ast.FieldList{
 						List: []*ast.Field{
 							{

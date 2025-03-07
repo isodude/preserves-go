@@ -9,7 +9,7 @@ import (
 )
 
 func TestDefinition(t *testing.T) {
-	_ = map[string]struct {
+	definitions := map[string]struct {
 		definition map[string]Definition
 		result     string
 	}{
@@ -26,11 +26,11 @@ import (
 	"github.com/isodude/preserves-go/lib/extras"
 	. "github.com/isodude/preserves-go/lib/preserves"
 )
-// Generated via union_interface
+
 type Test interface {
 	IsTest()
 }
-// Generated via union_interface
+
 func TestFromPreserves(value Value) (Test) {
 	if o := TestFirstFromPreserves(value); o != nil {
 		return o
@@ -43,7 +43,6 @@ func TestFromPreserves(value Value) (Test) {
 	}
 	return nil
 }
-// Generated via union_interface
 func TestToPreserves(s Test) (Value) {
 	switch u := s.(type) {
 	case *TestFirst:
@@ -55,17 +54,15 @@ func TestToPreserves(s Test) (Value) {
 	}
 	return nil
 }
-// Generated via struct
+
 type TestFirst struct {
 }
-// Generated via struct
+
 func NewTestFirst() (*TestFirst) {
 	return &TestFirst{}
 }
-// Generated via struct
 func (*TestFirst) IsTest() {
 }
-// Generated via lit
 func TestFirstFromPreserves(value Value) (*TestFirst) {
 	if v := SymbolFromPreserves(value); v != nil {
 		if v.Equal(NewSymbol("test0")) {
@@ -74,21 +71,18 @@ func TestFirstFromPreserves(value Value) (*TestFirst) {
 	}
 	return nil
 }
-// Generated via lit
 func TestFirstToPreserves(l TestFirst) (Value) {
 	return NewSymbol("test0")
 }
-// Generated via struct
+
 type TestSecond struct {
 }
-// Generated via struct
+
 func NewTestSecond() (*TestSecond) {
 	return &TestSecond{}
 }
-// Generated via struct
 func (*TestSecond) IsTest() {
 }
-// Generated via lit
 func TestSecondFromPreserves(value Value) (*TestSecond) {
 	if v := SymbolFromPreserves(value); v != nil {
 		if v.Equal(NewSymbol("test1")) {
@@ -97,21 +91,18 @@ func TestSecondFromPreserves(value Value) (*TestSecond) {
 	}
 	return nil
 }
-// Generated via lit
 func TestSecondToPreserves(l TestSecond) (Value) {
 	return NewSymbol("test1")
 }
-// Generated via struct
+
 type TestThird struct {
 }
-// Generated via struct
+
 func NewTestThird() (*TestThird) {
 	return &TestThird{}
 }
-// Generated via struct
 func (*TestThird) IsTest() {
 }
-// Generated via lit
 func TestThirdFromPreserves(value Value) (*TestThird) {
 	if v := SymbolFromPreserves(value); v != nil {
 		if v.Equal(NewSymbol("testN")) {
@@ -120,7 +111,6 @@ func TestThirdFromPreserves(value Value) (*TestThird) {
 	}
 	return nil
 }
-// Generated via lit
 func TestThirdToPreserves(l TestThird) (Value) {
 	return NewSymbol("testN")
 }
@@ -139,44 +129,39 @@ import (
 	"github.com/isodude/preserves-go/lib/extras"
 	. "github.com/isodude/preserves-go/lib/preserves"
 )
-// Generated via struct
+
 type NamedAlternative struct {
 	VariantLabel	Pstring
 	Pattern		Pattern
 }
-// Generated via struct
+
 func NewNamedAlternative(variantLabel Pstring, pattern Pattern) (*NamedAlternative) {
 	return &NamedAlternative{VariantLabel: variantLabel, Pattern: pattern}
 }
-// Generated via struct_tuple
 func NamedAlternativeFromPreserves(value Value) (*NamedAlternative) {
-	if rec, ok := value.(*Record); ok && len(rec.Fields) == 2 {
-		if sym, ok := rec.Key.(*Symbol); ok && sym.String() == "NamedAlternative" {
-			if p0 := PstringFromPreserves(rec.Fields[0]); p0 != nil {
-			}
+	if seq, ok := value.(*Sequence); ok && len(*seq) == 2 {
+		if p0 := PstringFromPreserves((*seq)[0]); p0 != nil {
 		}
 	}
 	return nil
 }
-// Generated via struct_tuple
-func NamedAlternativeToPreserves(s NamedAlternative) (Value) {
-	return &Record{Key: NewSymbol("NamedAlternative"), Fields: []Value{PstringToPreserves(s.VariantLabel)}}
+func NamedAlternativeToPreserves(d NamedAlternative) (Value) {
+	return &Sequence{PstringToPreserves(d.VariantLabel)}
 }
 `,
 		},
 	}
-	/*
-		for name, definition := range definitions {
-			defs := []goast.AST{}
-			for n, d := range definition.definition {
-				defs = append(defs, DefinitionGenerator(n, d))
-			}
-			result := goast.Encode("beep", defs)
-			if result != definition.result {
-				t.Fatalf("%s not equal: %v", name, diff.Diff(definition.result, result))
-			}
+	for name, definition := range definitions {
+		defs := []goast.AST{}
+		for n, d := range definition.definition {
+			defs = append(defs, DefinitionGenerator(n, d))
 		}
-	*/
+		result := goast.Encode("beep", defs)
+		if result != definition.result {
+			t.Fatalf("%s not equal: %v", name, diff.Diff(definition.result, result))
+		}
+	}
+
 	bundle := BundleGenerator("schema", *_document)
 	result := `package schema
 
@@ -184,11 +169,11 @@ import (
 	"github.com/isodude/preserves-go/lib/extras"
 	. "github.com/isodude/preserves-go/lib/preserves"
 )
-// Generated via union_interface
+
 type AtomKind interface {
 	IsAtomKind()
 }
-// Generated via union_interface
+
 func AtomKindFromPreserves(value Value) (AtomKind) {
 	if o := AtomKindBooleanFromPreserves(value); o != nil {
 		return o
@@ -210,7 +195,6 @@ func AtomKindFromPreserves(value Value) (AtomKind) {
 	}
 	return nil
 }
-// Generated via union_interface
 func AtomKindToPreserves(s AtomKind) (Value) {
 	switch u := s.(type) {
 	case *AtomKindBoolean:
@@ -232,6 +216,9 @@ func AtomKindToPreserves(s AtomKind) (Value) {
 type AtomKindBoolean struct {
 }
 
+func NewAtomKindBoolean() (*AtomKindBoolean) {
+	return &AtomKindBoolean{}
+}
 func (*AtomKindBoolean) IsAtomKind() {
 }
 func AtomKindBooleanFromPreserves(value Value) (*AtomKindBoolean) {
@@ -249,6 +236,9 @@ func AtomKindBooleanToPreserves(l AtomKindBoolean) (Value) {
 type AtomKindDouble struct {
 }
 
+func NewAtomKindDouble() (*AtomKindDouble) {
+	return &AtomKindDouble{}
+}
 func (*AtomKindDouble) IsAtomKind() {
 }
 func AtomKindDoubleFromPreserves(value Value) (*AtomKindDouble) {
@@ -266,6 +256,9 @@ func AtomKindDoubleToPreserves(l AtomKindDouble) (Value) {
 type AtomKindSignedInteger struct {
 }
 
+func NewAtomKindSignedInteger() (*AtomKindSignedInteger) {
+	return &AtomKindSignedInteger{}
+}
 func (*AtomKindSignedInteger) IsAtomKind() {
 }
 func AtomKindSignedIntegerFromPreserves(value Value) (*AtomKindSignedInteger) {
@@ -283,6 +276,9 @@ func AtomKindSignedIntegerToPreserves(l AtomKindSignedInteger) (Value) {
 type AtomKindString struct {
 }
 
+func NewAtomKindString() (*AtomKindString) {
+	return &AtomKindString{}
+}
 func (*AtomKindString) IsAtomKind() {
 }
 func AtomKindStringFromPreserves(value Value) (*AtomKindString) {
@@ -300,6 +296,9 @@ func AtomKindStringToPreserves(l AtomKindString) (Value) {
 type AtomKindByteString struct {
 }
 
+func NewAtomKindByteString() (*AtomKindByteString) {
+	return &AtomKindByteString{}
+}
 func (*AtomKindByteString) IsAtomKind() {
 }
 func AtomKindByteStringFromPreserves(value Value) (*AtomKindByteString) {
@@ -317,6 +316,9 @@ func AtomKindByteStringToPreserves(l AtomKindByteString) (Value) {
 type AtomKindSymbol struct {
 }
 
+func NewAtomKindSymbol() (*AtomKindSymbol) {
+	return &AtomKindSymbol{}
+}
 func (*AtomKindSymbol) IsAtomKind() {
 }
 func AtomKindSymbolFromPreserves(value Value) (*AtomKindSymbol) {
@@ -332,8 +334,8 @@ func AtomKindSymbolToPreserves(l AtomKindSymbol) (Value) {
 }
 
 type Binding struct {
-	Name    Symbol
-	Pattern SimplePattern
+	Name	Symbol
+	Pattern	SimplePattern
 }
 
 func NewBinding(name Symbol, pattern SimplePattern) (*Binding) {
@@ -379,11 +381,11 @@ func BundleFromPreserves(value Value) (*Bundle) {
 func BundleToPreserves(s Bundle) (Value) {
 	return &Record{Key: NewSymbol("bundle"), Fields: []Value{ModulesToPreserves(s.Modules)}}
 }
-// Generated via union_interface
+
 type CompoundPattern interface {
 	IsCompoundPattern()
 }
-// Generated via union_interface
+
 func CompoundPatternFromPreserves(value Value) (CompoundPattern) {
 	if o := CompoundPatternRecFromPreserves(value); o != nil {
 		return o
@@ -399,7 +401,6 @@ func CompoundPatternFromPreserves(value Value) (CompoundPattern) {
 	}
 	return nil
 }
-// Generated via union_interface
 func CompoundPatternToPreserves(s CompoundPattern) (Value) {
 	switch u := s.(type) {
 	case *CompoundPatternRec:
@@ -415,8 +416,8 @@ func CompoundPatternToPreserves(s CompoundPattern) (Value) {
 }
 
 type CompoundPatternRec struct {
-	Label  NamedPattern
-	Fields NamedPattern
+	Label	NamedPattern
+	Fields	NamedPattern
 }
 
 func NewCompoundPatternRec(label NamedPattern, fields NamedPattern) (*CompoundPatternRec) {
@@ -480,8 +481,8 @@ func CompoundPatternTupleToPreserves(s CompoundPatternTuple) (Value) {
 }
 
 type CompoundPatternTuplePrefix struct {
-	Fixed    []NamedPattern
-	Variable NamedSimplePattern
+	Fixed		[]NamedPattern
+	Variable	NamedSimplePattern
 }
 
 func NewCompoundPatternTuplePrefix(fixed []NamedPattern, variable NamedSimplePattern) (*CompoundPatternTuplePrefix) {
@@ -543,11 +544,11 @@ func CompoundPatternDictFromPreserves(value Value) (*CompoundPatternDict) {
 func CompoundPatternDictToPreserves(s CompoundPatternDict) (Value) {
 	return &Record{Key: NewSymbol("dict"), Fields: []Value{DictionaryEntriesToPreserves(s.Entries)}}
 }
-// Generated via union_interface
+
 type Definition interface {
 	IsDefinition()
 }
-// Generated via union_interface
+
 func DefinitionFromPreserves(value Value) (Definition) {
 	if o := DefinitionOrFromPreserves(value); o != nil {
 		return o
@@ -560,7 +561,6 @@ func DefinitionFromPreserves(value Value) (Definition) {
 	}
 	return nil
 }
-// Generated via union_interface
 func DefinitionToPreserves(s Definition) (Value) {
 	switch u := s.(type) {
 	case *DefinitionOr:
@@ -574,9 +574,9 @@ func DefinitionToPreserves(s Definition) (Value) {
 }
 
 type DefinitionOr struct {
-	Pattern0 NamedAlternative
-	Pattern1 NamedAlternative
-	PatternN []NamedAlternative
+	Pattern0	NamedAlternative
+	Pattern1	NamedAlternative
+	PatternN	[]NamedAlternative
 }
 
 func NewDefinitionOr(pattern0 NamedAlternative, pattern1 NamedAlternative, patternN []NamedAlternative) (*DefinitionOr) {
@@ -613,9 +613,9 @@ func DefinitionOrToPreserves(s DefinitionOr) (Value) {
 }
 
 type DefinitionAnd struct {
-	Pattern0 NamedPattern
-	Pattern1 NamedPattern
-	PatternN []NamedPattern
+	Pattern0	NamedPattern
+	Pattern1	NamedPattern
+	PatternN	[]NamedPattern
 }
 
 func NewDefinitionAnd(pattern0 NamedPattern, pattern1 NamedPattern, patternN []NamedPattern) (*DefinitionAnd) {
@@ -669,13 +669,12 @@ func DefinitionPatternFromPreserves(value Value) (*DefinitionPattern) {
 func DefinitionPatternToPreserves(s DefinitionPattern) (Value) {
 	return PatternToPreserves(s.Pattern)
 }
-// Generated via map
+
 type Definitions map[Symbol]Definition
-// Generated via map
+
 func NewDefinitions() (Definitions) {
 	return make(Definitions)
 }
-// Generated via map
 func DefinitionsFromPreserves(value Value) (*Definitions) {
 	if dict, ok := value.(*Dictionary); ok {
 		obj := NewDefinitions()
@@ -692,7 +691,6 @@ func DefinitionsFromPreserves(value Value) (*Definitions) {
 	}
 	return nil
 }
-// Generated via map
 func DefinitionsToPreserves(m Definitions) (Value) {
 	var dictionary = make(Dictionary)
 	for dKey, dValue := range m {
@@ -700,13 +698,12 @@ func DefinitionsToPreserves(m Definitions) (Value) {
 	}
 	return &dictionary
 }
-// Generated via map
+
 type DictionaryEntries map[Value]NamedSimplePattern
-// Generated via map
+
 func NewDictionaryEntries() (DictionaryEntries) {
 	return make(DictionaryEntries)
 }
-// Generated via map
 func DictionaryEntriesFromPreserves(value Value) (*DictionaryEntries) {
 	if dict, ok := value.(*Dictionary); ok {
 		obj := NewDictionaryEntries()
@@ -723,7 +720,6 @@ func DictionaryEntriesFromPreserves(value Value) (*DictionaryEntries) {
 	}
 	return nil
 }
-// Generated via map
 func DictionaryEntriesToPreserves(m DictionaryEntries) (Value) {
 	var dictionary = make(Dictionary)
 	for dKey, dValue := range m {
@@ -731,11 +727,11 @@ func DictionaryEntriesToPreserves(m DictionaryEntries) (Value) {
 	}
 	return &dictionary
 }
-// Generated via union_interface
+
 type EmbeddedTypeName interface {
 	IsEmbeddedTypeName()
 }
-// Generated via union_interface
+
 func EmbeddedTypeNameFromPreserves(value Value) (EmbeddedTypeName) {
 	if o := EmbeddedTypeNameFalseFromPreserves(value); o != nil {
 		return o
@@ -745,7 +741,6 @@ func EmbeddedTypeNameFromPreserves(value Value) (EmbeddedTypeName) {
 	}
 	return nil
 }
-// Generated via union_interface
 func EmbeddedTypeNameToPreserves(s EmbeddedTypeName) (Value) {
 	switch u := s.(type) {
 	case *EmbeddedTypeNameFalse:
@@ -759,6 +754,9 @@ func EmbeddedTypeNameToPreserves(s EmbeddedTypeName) (Value) {
 type EmbeddedTypeNameFalse struct {
 }
 
+func NewEmbeddedTypeNameFalse() (*EmbeddedTypeNameFalse) {
+	return &EmbeddedTypeNameFalse{}
+}
 func (*EmbeddedTypeNameFalse) IsEmbeddedTypeName() {
 }
 func EmbeddedTypeNameFalseFromPreserves(value Value) (*EmbeddedTypeNameFalse) {
@@ -830,16 +828,15 @@ func (m ModulePath) Hash() (s string) {
 	}
 	return
 }
-func (m *ModulePath) ToHash() extras.Hash[ModulePath] {
+func (m *ModulePath) ToHash() (extras.Hash[ModulePath]) {
 	return extras.NewHash(*m)
 }
-// Generated via map
+
 type Modules map[extras.Hash[ModulePath]]Schema
-// Generated via map
+
 func NewModules() (Modules) {
 	return make(Modules)
 }
-// Generated via map
 func ModulesFromPreserves(value Value) (*Modules) {
 	if dict, ok := value.(*Dictionary); ok {
 		obj := NewModules()
@@ -856,7 +853,6 @@ func ModulesFromPreserves(value Value) (*Modules) {
 	}
 	return nil
 }
-// Generated via map
 func ModulesToPreserves(m Modules) (Value) {
 	var dictionary = make(Dictionary)
 	for dKey, dValue := range m {
@@ -866,8 +862,8 @@ func ModulesToPreserves(m Modules) (Value) {
 }
 
 type NamedAlternative struct {
-	VariantLabel Pstring
-	Pattern      Pattern
+	VariantLabel	Pstring
+	Pattern		Pattern
 }
 
 func NewNamedAlternative(variantLabel Pstring, pattern Pattern) (*NamedAlternative) {
@@ -886,11 +882,11 @@ func NamedAlternativeFromPreserves(value Value) (*NamedAlternative) {
 func NamedAlternativeToPreserves(d NamedAlternative) (Value) {
 	return &Sequence{PstringToPreserves(d.VariantLabel), PatternToPreserves(d.Pattern)}
 }
-// Generated via union_interface
+
 type NamedPattern interface {
 	IsNamedPattern()
 }
-// Generated via union_interface
+
 func NamedPatternFromPreserves(value Value) (NamedPattern) {
 	if o := NamedPatternNamedFromPreserves(value); o != nil {
 		return o
@@ -900,7 +896,6 @@ func NamedPatternFromPreserves(value Value) (NamedPattern) {
 	}
 	return nil
 }
-// Generated via union_interface
 func NamedPatternToPreserves(s NamedPattern) (Value) {
 	switch u := s.(type) {
 	case *NamedPatternNamed:
@@ -948,11 +943,11 @@ func NamedPatternAnonymousFromPreserves(value Value) (*NamedPatternAnonymous) {
 func NamedPatternAnonymousToPreserves(s NamedPatternAnonymous) (Value) {
 	return PatternToPreserves(s.Pattern)
 }
-// Generated via union_interface
+
 type NamedSimplePattern interface {
 	IsNamedSimplePattern()
 }
-// Generated via union_interface
+
 func NamedSimplePatternFromPreserves(value Value) (NamedSimplePattern) {
 	if o := NamedSimplePatternNamedFromPreserves(value); o != nil {
 		return o
@@ -962,7 +957,6 @@ func NamedSimplePatternFromPreserves(value Value) (NamedSimplePattern) {
 	}
 	return nil
 }
-// Generated via union_interface
 func NamedSimplePatternToPreserves(s NamedSimplePattern) (Value) {
 	switch u := s.(type) {
 	case *NamedSimplePatternNamed:
@@ -1010,11 +1004,11 @@ func NamedSimplePatternAnonymousFromPreserves(value Value) (*NamedSimplePatternA
 func NamedSimplePatternAnonymousToPreserves(s NamedSimplePatternAnonymous) (Value) {
 	return SimplePatternToPreserves(s.SimplePattern)
 }
-// Generated via union_interface
+
 type Pattern interface {
 	IsPattern()
 }
-// Generated via union_interface
+
 func PatternFromPreserves(value Value) (Pattern) {
 	if o := PatternSimplePatternFromPreserves(value); o != nil {
 		return o
@@ -1024,7 +1018,6 @@ func PatternFromPreserves(value Value) (Pattern) {
 	}
 	return nil
 }
-// Generated via union_interface
 func PatternToPreserves(s Pattern) (Value) {
 	switch u := s.(type) {
 	case *PatternSimplePattern:
@@ -1074,8 +1067,8 @@ func PatternCompoundPatternToPreserves(s PatternCompoundPattern) (Value) {
 }
 
 type Ref struct {
-	Module ModulePath
-	Name   Symbol
+	Module	ModulePath
+	Name	Symbol
 }
 
 func NewRef(module ModulePath, name Symbol) (*Ref) {
@@ -1145,11 +1138,11 @@ func SchemaFromPreserves(value Value) (*Schema) {
 func SchemaToPreserves(d Schema) (Value) {
 	return &Record{Key: NewSymbol("schema"), Fields: []Value{&Dictionary{NewSymbol("definitions"): DefinitionsToPreserves(d.Definitions), NewSymbol("embeddedType"): EmbeddedTypeNameToPreserves(d.EmbeddedType), NewSymbol("version"): VersionToPreserves(d.Version)}}}
 }
-// Generated via union_interface
+
 type SimplePattern interface {
 	IsSimplePattern()
 }
-// Generated via union_interface
+
 func SimplePatternFromPreserves(value Value) (SimplePattern) {
 	if o := SimplePatternAnyFromPreserves(value); o != nil {
 		return o
@@ -1177,7 +1170,6 @@ func SimplePatternFromPreserves(value Value) (SimplePattern) {
 	}
 	return nil
 }
-// Generated via union_interface
 func SimplePatternToPreserves(s SimplePattern) (Value) {
 	switch u := s.(type) {
 	case *SimplePatternAny:
@@ -1203,6 +1195,9 @@ func SimplePatternToPreserves(s SimplePattern) (Value) {
 type SimplePatternAny struct {
 }
 
+func NewSimplePatternAny() (*SimplePatternAny) {
+	return &SimplePatternAny{}
+}
 func (*SimplePatternAny) IsSimplePattern() {
 }
 func SimplePatternAnyFromPreserves(value Value) (*SimplePatternAny) {
@@ -1341,8 +1336,8 @@ func SimplePatternSetofToPreserves(s SimplePatternSetof) (Value) {
 }
 
 type SimplePatternDictof struct {
-	Key   SimplePattern
-	Value SimplePattern
+	Key	SimplePattern
+	Value	SimplePattern
 }
 
 func NewSimplePatternDictof(key SimplePattern, value SimplePattern) (*SimplePatternDictof) {

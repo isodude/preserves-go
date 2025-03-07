@@ -52,13 +52,6 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 			})
 		}*/
 	h := &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "// Generated via union_interface\n",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -140,13 +133,6 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via union_interface\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%sFromPreserves", u.Name)),
 			Type: &ast.FuncType{
 
@@ -178,13 +164,6 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via union_interface\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", u.GetTitle(), "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

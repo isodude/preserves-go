@@ -154,13 +154,6 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	//fieldType = ast.NewIdent(fmt.Sprintf("\"%s\"", field))
 	if above == nil {
 		decl = append(decl, &ast.GenDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via lit\n",
-					},
-				},
-			},
 			Tok: token.TYPE,
 			Specs: []ast.Spec{
 				&ast.TypeSpec{
@@ -175,13 +168,6 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 		if above != nil {
 			decl = append(decl,
 				&ast.FuncDecl{
-					Doc: &ast.CommentGroup{
-						List: []*ast.Comment{
-							{
-								Text: "// Generated via lit\n",
-							},
-						},
-					},
 					Recv: &ast.FieldList{
 						List: []*ast.Field{
 							{
@@ -199,13 +185,6 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via lit\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 
@@ -243,13 +222,6 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	*/
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via lit\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{

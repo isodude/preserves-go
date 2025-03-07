@@ -254,7 +254,7 @@ func Encode(name string, asts []AST) string {
 	asts = append(asts, []AST{&Boolean{}, &SignedInteger{}, &Pstring{}, &Symbol{}, &Value{}}...)
 
 	astFile := &ast.File{
-		Name:  ast.NewIdent("beep"),
+		Name:  ast.NewIdent(name),
 		Decls: EncodeMapping(name, asts),
 	}
 	fset := token.NewFileSet()

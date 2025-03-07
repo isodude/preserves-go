@@ -82,7 +82,7 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 	}
 	var sItemParsed ast.Expr
 	sItemParsed = ast.NewIdent("itemParsed")
-	if o != UnionInterfaceObjectType && o != MapObjectType {
+	if !(o == UnionInterfaceObjectType || o == InterfaceObjectType) && o != MapObjectType {
 		sItemParsed = &ast.StarExpr{X: sItemParsed}
 	}
 	var returnElts []ast.Expr
@@ -257,13 +257,6 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct_tuple_prefix\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
@@ -368,13 +361,6 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 
 	decl = append(decl,
 		&ast.FuncDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: "// Generated via struct_tuple_prefix\n",
-					},
-				},
-			},
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
