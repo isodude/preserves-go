@@ -91,6 +91,7 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 		s := &Struct{
 			title:           d.title,
 			Fields:          d.Fields,
+			ASTFields:       d.ASTFields,
 			StructKind:      *d.StructKind,
 			mapFieldsToType: d.mapFieldsToType,
 			MapKeyToField:   d.MapKeyToField,

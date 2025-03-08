@@ -58,7 +58,10 @@ func (t *title) GetFirstLower() string {
 
 func (t *title) Ident(prefix *title, lower bool) *ast.Ident {
 	if lower {
-		return ast.NewIdent((&title{name: t.GetPrefixTitle(prefix)}).GetFirstLower())
+		if prefix != nil {
+			return ast.NewIdent(fmt.Sprintf("%s%s", prefix.GetTitle(), t.GetFirstLower()))
+		}
+		return ast.NewIdent(t.GetFirstLower())
 	}
 	return ast.NewIdent(t.GetPrefixTitle(prefix))
 }

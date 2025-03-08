@@ -67,93 +67,16 @@ func (*Passthrough) SetKind(o ObjectType)       {}
 func (*Passthrough) SetStructKind(o ObjectType) {}
 func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 	name := p.GetName()
-	decl = append(decl, &ast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: ast.NewIdent(name),
-				Type: &ast.StructType{
-					Fields: &ast.FieldList{
-						List: []*ast.Field{{Type: ast.NewIdent(p.Object)}},
-					},
-				},
-			},
-		},
-	})
+	f := NewField("")
+	f.SetType(p.Object)
+	astFields := []*Field{f}
 
-	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{{
-						Names: []*ast.Ident{ast.NewIdent("obj")},
-						Type:  ast.NewIdent(p.Object),
-					}},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  &ast.StarExpr{X: ast.NewIdent(name)},
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{List: []ast.Stmt{
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: ast.NewIdent(name),
-								Elts: []ast.Expr{&ast.KeyValueExpr{
-									Key:   ast.NewIdent(p.Object),
-									Value: ast.NewIdent("obj"),
-								}},
-							},
-						},
-					},
-				},
-			},
-			},
-		},
-	)
-
-	sname := &ast.StarExpr{X: ast.NewIdent(name)}
+	decl = append(decl, objectTypeSpec(nil, p.Title(), astFields))
+	f.SetName(p.Object)
+	decl = append(decl, objectFuncDeclNew(nil, p.Title(), astFields))
 	if above != nil {
-		decl = append(decl,
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						}},
-				},
-				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{},
-				},
-				Body: &ast.BlockStmt{},
-			})
+		decl = append(decl, objectFuncDeclIs(nil, p.Title(), above.Title()))
 	}
-	/*
-		func (p *{{name}}) FromPreserves(value Value) *{{name}} {
-			var o {{p.Object}}
-			for _, v := range _pattern {
-				switch u := v.(type) {
-				case *{{p.Structs[0].Name}}:
-					o = u.FromPerservesSchemaAST(value)
-				}
-			}
-			if o != nil {
-				if p, ok := o.({{p.Object}}); ok {
-					return &{{name}}}}{p}
-				}
-			}
-		}
-	*/
 
 	objName := fmt.Sprintf("%s%s", p.GetName(), cases.Title(language.English, cases.NoLower).String(p.Object))
 	if _, ok := p.mapFieldsToType[strings.ToLower(p.Object)]; ok {

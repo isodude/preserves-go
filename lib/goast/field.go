@@ -2,6 +2,7 @@ package goast
 
 import (
 	"go/ast"
+	"strings"
 
 	"github.com/isodude/preserves-go/lib/preserves"
 )
@@ -31,11 +32,28 @@ func NewField(name string) *Field {
 }
 
 func (f *Field) Expr() ast.Expr {
-	return f.fieldType.Expr()
+	g := func(s string) string {
+		if strings.ToLower(s) == "any" {
+			return "Value"
+		}
+		if s == "String" {
+			return "Pstring"
+		}
+		return s
+	}
+	if f.Array {
+		return &ast.ArrayType{Elt: ast.NewIdent(g(f.Type))}
+	}
+	if f.Dict {
+		return ast.NewIdent(g(f.DictValue.GetTitle()))
+	}
+	return ast.NewIdent(g(f.Type))
+	// return f.fieldType.Expr()
 }
 
 func (f *Field) GetFieldTypeName() string {
-	return f.fieldType.Name()
+	return f.Type
+	// return f.fieldType.Name()
 }
 
 func (f *Field) SetArray() {

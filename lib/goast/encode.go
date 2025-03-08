@@ -93,15 +93,16 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 	g = func(a AST) {
 		switch b := a.(type) {
 		case *Struct:
-			for _, f := range b.ASTFields {
+			for i, f := range b.ASTFields {
 				if f.Dict {
-					for i, c := range asts {
+					for j, c := range asts {
 						if c == a {
 							n := f.ConvertToMap(a)
-							asts[i] = n
+							asts[j] = n
 							m[strings.ToLower(n.GetName())] = n
 						}
 					}
+					b.ASTFields = slices.Delete(b.ASTFields, i, i+1)
 
 					continue
 				}

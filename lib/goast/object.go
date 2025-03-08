@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/token"
 	"slices"
+	"strings"
 )
 
 //	type Object struct {
@@ -12,17 +13,20 @@ import (
 //	  Interface Interface
 //	}
 func objectTypeSpec(prefix *title, name *title, fields []*Field) ast.Decl {
-	var (
-		list []*ast.Field
-	)
+	fieldList := &ast.FieldList{List: []*ast.Field{}}
 
 	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{&ast.TypeSpec{
 		Name: ast.NewIdent(name.GetPrefixTitle(prefix)),
-		Type: &ast.StructType{Fields: &ast.FieldList{List: list}},
+		Type: &ast.StructType{Fields: fieldList},
 	}}}
 
 	for _, field := range fields {
-		list = append(list, &ast.Field{Names: []*ast.Ident{field.Ident(nil, false)}, Type: field.Expr()})
+		fieldName := field.Ident(nil, false)
+		if len(fieldName.Name) == 0 {
+			fieldList.List = append(fieldList.List, &ast.Field{Names: []*ast.Ident{}, Type: field.Expr()})
+		} else {
+			fieldList.List = append(fieldList.List, &ast.Field{Names: []*ast.Ident{fieldName}, Type: field.Expr()})
+		}
 	}
 
 	return decl
@@ -32,21 +36,19 @@ func objectTypeSpec(prefix *title, name *title, fields []*Field) ast.Decl {
 //	  return &Object{Field: field, Interface: _interface }
 //	}
 func objectFuncDeclNew(prefix *title, name *title, fields []*Field) ast.Decl {
-	var (
-		params []*ast.Field
-		elts   []ast.Expr
-	)
+	fieldList := &ast.FieldList{List: []*ast.Field{}}
+	compositeLit := &ast.CompositeLit{Type: name.Ident(prefix, false), Elts: []ast.Expr{}}
 
-	funcDecl := &ast.FuncDecl{Name: name.Ident(prefix.PrefixTitle("New"), false),
+	funcDecl := &ast.FuncDecl{Name: (&title{name: name.GetPrefixTitle(prefix)}).PrefixTitle("New").Ident(nil, false),
 		Type: &ast.FuncType{
-			Params: &ast.FieldList{List: params},
+			Params: fieldList,
 			Results: &ast.FieldList{List: []*ast.Field{
 				{Names: []*ast.Ident{}, Type: &ast.StarExpr{X: name.Ident(prefix, false)}},
 			},
 			}},
 		Body: &ast.BlockStmt{List: []ast.Stmt{&ast.ReturnStmt{Results: []ast.Expr{&ast.UnaryExpr{
 			Op: token.AND,
-			X:  &ast.CompositeLit{Type: name.Ident(nil, false), Elts: elts},
+			X:  compositeLit,
 		}}}}},
 	}
 
@@ -55,15 +57,15 @@ func objectFuncDeclNew(prefix *title, name *title, fields []*Field) ast.Decl {
 		kv := &ast.KeyValueExpr{
 			Key: field.Ident(nil, false),
 		}
-		if slices.Contains([]string{"interface", "any"}, field.GetFieldTypeName()) {
+		if slices.Contains([]string{"interface", "any"}, strings.ToLower(field.GetName())) {
 			f.Names = []*ast.Ident{field.Ident(&title{name: "_"}, true)}
 			kv.Value = field.Ident(&title{name: "_"}, true)
 		} else {
 			f.Names = []*ast.Ident{field.Ident(nil, true)}
 			kv.Value = field.Ident(nil, true)
 		}
-		params = append(params, f)
-		elts = append(elts, kv)
+		fieldList.List = append(fieldList.List, f)
+		compositeLit.Elts = append(compositeLit.Elts, kv)
 	}
 
 	return funcDecl

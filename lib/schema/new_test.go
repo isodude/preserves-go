@@ -655,8 +655,8 @@ type DefinitionPattern struct {
 	Pattern
 }
 
-func NewDefinitionPattern(obj Pattern) (*DefinitionPattern) {
-	return &DefinitionPattern{Pattern: obj}
+func NewDefinitionPattern(pattern Pattern) (*DefinitionPattern) {
+	return &DefinitionPattern{Pattern: pattern}
 }
 func (*DefinitionPattern) IsDefinition() {
 }
@@ -775,8 +775,8 @@ type EmbeddedTypeNameRef struct {
 	Ref
 }
 
-func NewEmbeddedTypeNameRef(obj Ref) (*EmbeddedTypeNameRef) {
-	return &EmbeddedTypeNameRef{Ref: obj}
+func NewEmbeddedTypeNameRef(ref Ref) (*EmbeddedTypeNameRef) {
+	return &EmbeddedTypeNameRef{Ref: ref}
 }
 func (*EmbeddedTypeNameRef) IsEmbeddedTypeName() {
 }
@@ -910,8 +910,8 @@ type NamedPatternNamed struct {
 	Binding
 }
 
-func NewNamedPatternNamed(obj Binding) (*NamedPatternNamed) {
-	return &NamedPatternNamed{Binding: obj}
+func NewNamedPatternNamed(binding Binding) (*NamedPatternNamed) {
+	return &NamedPatternNamed{Binding: binding}
 }
 func (*NamedPatternNamed) IsNamedPattern() {
 }
@@ -929,8 +929,8 @@ type NamedPatternAnonymous struct {
 	Pattern
 }
 
-func NewNamedPatternAnonymous(obj Pattern) (*NamedPatternAnonymous) {
-	return &NamedPatternAnonymous{Pattern: obj}
+func NewNamedPatternAnonymous(pattern Pattern) (*NamedPatternAnonymous) {
+	return &NamedPatternAnonymous{Pattern: pattern}
 }
 func (*NamedPatternAnonymous) IsNamedPattern() {
 }
@@ -971,8 +971,8 @@ type NamedSimplePatternNamed struct {
 	Binding
 }
 
-func NewNamedSimplePatternNamed(obj Binding) (*NamedSimplePatternNamed) {
-	return &NamedSimplePatternNamed{Binding: obj}
+func NewNamedSimplePatternNamed(binding Binding) (*NamedSimplePatternNamed) {
+	return &NamedSimplePatternNamed{Binding: binding}
 }
 func (*NamedSimplePatternNamed) IsNamedSimplePattern() {
 }
@@ -990,8 +990,8 @@ type NamedSimplePatternAnonymous struct {
 	SimplePattern
 }
 
-func NewNamedSimplePatternAnonymous(obj SimplePattern) (*NamedSimplePatternAnonymous) {
-	return &NamedSimplePatternAnonymous{SimplePattern: obj}
+func NewNamedSimplePatternAnonymous(simplePattern SimplePattern) (*NamedSimplePatternAnonymous) {
+	return &NamedSimplePatternAnonymous{SimplePattern: simplePattern}
 }
 func (*NamedSimplePatternAnonymous) IsNamedSimplePattern() {
 }
@@ -1032,8 +1032,8 @@ type PatternSimplePattern struct {
 	SimplePattern
 }
 
-func NewPatternSimplePattern(obj SimplePattern) (*PatternSimplePattern) {
-	return &PatternSimplePattern{SimplePattern: obj}
+func NewPatternSimplePattern(simplePattern SimplePattern) (*PatternSimplePattern) {
+	return &PatternSimplePattern{SimplePattern: simplePattern}
 }
 func (*PatternSimplePattern) IsPattern() {
 }
@@ -1051,8 +1051,8 @@ type PatternCompoundPattern struct {
 	CompoundPattern
 }
 
-func NewPatternCompoundPattern(obj CompoundPattern) (*PatternCompoundPattern) {
-	return &PatternCompoundPattern{CompoundPattern: obj}
+func NewPatternCompoundPattern(compoundPattern CompoundPattern) (*PatternCompoundPattern) {
+	return &PatternCompoundPattern{CompoundPattern: compoundPattern}
 }
 func (*PatternCompoundPattern) IsPattern() {
 }
@@ -1367,8 +1367,8 @@ type SimplePatternRef struct {
 	Ref
 }
 
-func NewSimplePatternRef(obj Ref) (*SimplePatternRef) {
-	return &SimplePatternRef{Ref: obj}
+func NewSimplePatternRef(ref Ref) (*SimplePatternRef) {
+	return &SimplePatternRef{Ref: ref}
 }
 func (*SimplePatternRef) IsSimplePattern() {
 }

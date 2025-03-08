@@ -3,12 +3,8 @@ package goast
 import (
 	"fmt"
 	"go/ast"
-	"go/token"
-	"strings"
 
 	"github.com/isodude/preserves-go/lib/preserves"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Struct struct {
@@ -116,146 +112,18 @@ func (s *Struct) GetStructKind() AST {
 	}
 }
 
-/*
-func (s *Struct) FromPreserves(Value) *Struct {
-
-}
-*/
 func (s *Struct) AST(above AST) (decl []ast.Decl) {
 	name := s.GetTitle()
+	var aboveTitle *title
 	if above != nil {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
+		aboveTitle = above.Title()
 	}
-	var fields []*ast.Field
-	for _, field := range s.Fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-
-		var nameType ast.Expr
-		nameType = field.Type
-		if ident, ok := nameType.(*ast.Ident); ok {
-			if strings.ToLower(ident.String()) == "any" {
-				nameType = ast.NewIdent("Value")
-			}
-
-			if ident.String() == "String" {
-				nameType = ast.NewIdent("Pstring")
-			}
-		}
-
-		fname := cases.Title(language.English, cases.NoLower).String(field.Names[0].String())
-		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(fname)},
-			Type:  nameType,
-		})
-	}
-
 	if !(s.StructKind == StructSeqofType || (s.StructKind == LitType && above == nil) || s.StructKind == TupleType) {
-		decl = append(decl, &ast.GenDecl{
-			Tok: token.TYPE,
-			Specs: []ast.Spec{
-				&ast.TypeSpec{
-					Name: ast.NewIdent(name),
-					Type: &ast.StructType{
-						Fields: &ast.FieldList{
-							List: fields,
-						},
-					},
-				},
-			},
-		})
-		var smallFields []*ast.Field
-		for _, field := range fields {
-			if len(field.Names) < 1 {
-				continue
-			}
-			if len(field.Names[0].Name) < 2 {
-				continue
-			}
-			fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-			switch fname {
-			case "interface":
-				fallthrough
-			case "any":
-				fname = fmt.Sprintf("_%s", fname)
-			}
-			smallFields = append(smallFields, &ast.Field{
-				Names: []*ast.Ident{ast.NewIdent(fname)},
-				Type:  field.Type,
-			})
-		}
-		var smallValues []ast.Expr
-		for _, field := range fields {
-			if len(field.Names) < 1 {
-				continue
-			}
-			if len(field.Names[0].Name) < 2 {
-				continue
-			}
-			fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-			switch fname {
-			case "interface":
-				fallthrough
-			case "any":
-				fname = fmt.Sprintf("_%s", fname)
-			}
-			smallValues = append(smallValues, &ast.KeyValueExpr{
-				Key:   field.Names[0],
-				Value: ast.NewIdent(fname),
-			})
-		}
-
-		decl = append(decl,
-			&ast.FuncDecl{
-				Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: smallFields,
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{},
-								Type:  &ast.StarExpr{X: ast.NewIdent(name)},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{List: []ast.Stmt{
-					&ast.ReturnStmt{
-						Results: []ast.Expr{
-							&ast.UnaryExpr{
-								Op: token.AND,
-								X: &ast.CompositeLit{
-									Type: ast.NewIdent(name),
-									Elts: smallValues,
-								},
-							},
-						},
-					},
-				},
-				},
-			},
-		)
-
-		sname := &ast.StarExpr{X: ast.NewIdent(name)}
+		decl = append(decl, objectTypeSpec(aboveTitle, s.Title(), s.ASTFields))
+		decl = append(decl, objectFuncDeclNew(aboveTitle, s.Title(), s.ASTFields))
 		if above != nil {
-			decl = append(decl,
-				&ast.FuncDecl{
-					Recv: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{},
-								Type:  sname,
-							}},
-					},
-					Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
-					Type: &ast.FuncType{
-						Params: &ast.FieldList{},
-					},
-					Body: &ast.BlockStmt{},
-				})
+			decl = append(decl, objectFuncDeclIs(aboveTitle, s.Title(), aboveTitle))
 		}
 	}
 
