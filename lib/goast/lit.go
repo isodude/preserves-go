@@ -129,8 +129,10 @@ func (l *Lit) GetType() string {
 }
 func (l *Lit) AST(above AST) (decl []ast.Decl) {
 	name := l.GetTitle()
+	var aboveTitle *title
 	if above != nil {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
+		aboveTitle = above.Title()
 	}
 	var b bytes.Buffer
 	if l.Type == nil {
@@ -141,107 +143,25 @@ func (l *Lit) AST(above AST) (decl []ast.Decl) {
 		fmt.Printf("err: %s\n", err)
 		return
 	}
-	//field := b.String()
-	//var fieldType ast.Expr
-	//fieldType = ast.NewIdent(fmt.Sprintf("\"%s\"", field))
+
 	if above == nil {
-		decl = append(decl, &ast.GenDecl{
-			Tok: token.TYPE,
-			Specs: []ast.Spec{
-				&ast.TypeSpec{
-					Name: ast.NewIdent(name),
-					Type: &ast.StructType{
-						Fields: &ast.FieldList{},
-					},
-				},
-			},
-		})
-		sname := &ast.StarExpr{X: ast.NewIdent(name)}
-		if above != nil {
-			decl = append(decl,
-				&ast.FuncDecl{
-					Recv: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{},
-								Type:  sname,
-							}},
-					},
-					Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
-					Type: &ast.FuncType{
-						Params: &ast.FieldList{},
-					},
-					Body: &ast.BlockStmt{},
-				})
-		}
+		decl = append(decl, objectTypeSpec(nil, l.Title(), []*Field{}))
+		decl = append(decl, objectFuncDeclNew(nil, l.Title(), []*Field{}))
 	}
-	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
-			Type: &ast.FuncType{
 
-				Params: &ast.FieldList{
+	decl = append(decl, objectFuncDeclFromPreserves(aboveTitle, l.Title(), []*Field{}, []ast.Stmt{
+		l.Stmt(ast.NewIdent("value"), []ast.Stmt{&ast.ReturnStmt{Results: []ast.Expr{
+			&ast.UnaryExpr{Op: token.AND, X: &ast.CompositeLit{Type: ast.NewIdent(name)}}}}}),
+		&ast.ReturnStmt{Results: []ast.Expr{ast.NewIdent("nil")}},
+	}))
 
-					List: []*ast.Field{{
-						Names: []*ast.Ident{ast.NewIdent("value")},
-						Type:  ast.NewIdent("Value"),
-					}},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  &ast.StarExpr{X: ast.NewIdent(name)},
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					l.Stmt(ast.NewIdent("value"), []ast.Stmt{&ast.ReturnStmt{Results: []ast.Expr{
-						&ast.UnaryExpr{Op: token.AND, X: &ast.CompositeLit{Type: ast.NewIdent(name)}}}}}),
-					&ast.ReturnStmt{Results: []ast.Expr{ast.NewIdent("nil")}},
-				},
+	decl = append(decl, objectFuncDeclToPreserves(aboveTitle, l.Title(), []*Field{}, []ast.Stmt{
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				l.ToStmt(nil)[0].(*ast.KeyValueExpr).Value,
 			},
 		},
-	)
+	}))
 
-	/*
-
-	   func AtomKindStringToPreserves(l AtomKindString) Value {
-	   	return SymbolToPreserves(NewSymbol("String"))
-	   }
-	*/
-	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{ast.NewIdent("l")},
-							Type:  ast.NewIdent(name),
-						},
-					},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  ast.NewIdent("Value"),
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.ReturnStmt{
-						Results: []ast.Expr{
-							l.ToStmt(nil)[0].(*ast.KeyValueExpr).Value,
-						},
-					},
-				},
-			},
-		})
 	return
 }

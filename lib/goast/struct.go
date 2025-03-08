@@ -84,6 +84,7 @@ func (s *Struct) GetStructKind() AST {
 		return &Tuple{
 			title:           s.title,
 			Fields:          s.Fields,
+			ASTFields:       s.ASTFields,
 			mapFieldsToType: s.mapFieldsToType,
 			identifier:      s.Identifier,
 		}
@@ -119,7 +120,7 @@ func (s *Struct) AST(above AST) (decl []ast.Decl) {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
 		aboveTitle = above.Title()
 	}
-	if !(s.StructKind == StructSeqofType || (s.StructKind == LitType && above == nil) || s.StructKind == TupleType) {
+	if !(s.StructKind == StructSeqofType || (s.StructKind == LitType && above == nil)) {
 		decl = append(decl, objectTypeSpec(aboveTitle, s.Title(), s.ASTFields))
 		decl = append(decl, objectFuncDeclNew(aboveTitle, s.Title(), s.ASTFields))
 		if above != nil {

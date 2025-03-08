@@ -10,6 +10,7 @@ import (
 )
 
 type Title interface {
+	First(*title) string
 	SetName(string)
 	GetName() string
 	Title() *title
@@ -64,4 +65,12 @@ func (t *title) Ident(prefix *title, lower bool) *ast.Ident {
 		return ast.NewIdent(t.GetFirstLower())
 	}
 	return ast.NewIdent(t.GetPrefixTitle(prefix))
+}
+
+func (t *title) First(prefix *title) string {
+	n := t.GetPrefixTitle(prefix)
+	if len(n) > 0 {
+		return strings.ToLower(string(n[0]))
+	}
+	return ""
 }

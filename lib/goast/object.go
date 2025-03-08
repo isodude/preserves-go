@@ -84,10 +84,7 @@ func objectFuncDeclIs(prefix *title, name *title, target *title) ast.Decl {
 }
 
 // func ObjectFromPreserves(value Value) *Object { }
-func objectFuncDeclFromPreserves(prefix *title, name *title, fields []*Field) ast.Decl {
-	var (
-		list []ast.Stmt
-	)
+func objectFuncDeclFromPreserves(prefix *title, name *title, fields []*Field, list []ast.Stmt) ast.Decl {
 	funcDecl := &ast.FuncDecl{
 		Name: ast.NewIdent(fmt.Sprintf("%s%s", name.GetPrefixTitle(prefix), "FromPreserves")),
 		Type: &ast.FuncType{
@@ -102,16 +99,20 @@ func objectFuncDeclFromPreserves(prefix *title, name *title, fields []*Field) as
 }
 
 // func ObjectToPreserves(d Object) Value { }
-func objectFuncDeclToPreserves(prefix *title, name *title, fields []*Field) ast.Decl {
-	var (
-		list []ast.Stmt
-	)
-
+func objectFuncDeclToPreserves(prefix *title, name *title, fields []*Field, list []ast.Stmt) ast.Decl {
+	n := name.GetFirstLower()
+	var ident *ast.Ident
+	if len(n) > 0 {
+		ident = ast.NewIdent(string(n[0]))
+	}
+	if len(fields) == 0 {
+		ident = ast.NewIdent("_")
+	}
 	funcDecl := &ast.FuncDecl{
 		Name: ast.NewIdent(fmt.Sprintf("%s%s", name.GetPrefixTitle(prefix), "ToPreserves")),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{List: []*ast.Field{
-				{Names: []*ast.Ident{ast.NewIdent("d")}, Type: ast.NewIdent(name.GetPrefixTitle(prefix))},
+				{Names: []*ast.Ident{ident}, Type: ast.NewIdent(name.GetPrefixTitle(prefix))},
 			}},
 			Results: &ast.FieldList{List: []*ast.Field{
 				{Names: []*ast.Ident{}, Type: ast.NewIdent("Value")}},

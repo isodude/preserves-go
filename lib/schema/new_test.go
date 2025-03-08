@@ -71,7 +71,7 @@ func TestFirstFromPreserves(value Value) (*TestFirst) {
 	}
 	return nil
 }
-func TestFirstToPreserves(l TestFirst) (Value) {
+func TestFirstToPreserves(_ TestFirst) (Value) {
 	return NewSymbol("test0")
 }
 
@@ -91,7 +91,7 @@ func TestSecondFromPreserves(value Value) (*TestSecond) {
 	}
 	return nil
 }
-func TestSecondToPreserves(l TestSecond) (Value) {
+func TestSecondToPreserves(_ TestSecond) (Value) {
 	return NewSymbol("test1")
 }
 
@@ -111,7 +111,7 @@ func TestThirdFromPreserves(value Value) (*TestThird) {
 	}
 	return nil
 }
-func TestThirdToPreserves(l TestThird) (Value) {
+func TestThirdToPreserves(_ TestThird) (Value) {
 	return NewSymbol("testN")
 }
 `,
@@ -145,8 +145,8 @@ func NamedAlternativeFromPreserves(value Value) (*NamedAlternative) {
 	}
 	return nil
 }
-func NamedAlternativeToPreserves(d NamedAlternative) (Value) {
-	return &Sequence{PstringToPreserves(d.VariantLabel)}
+func NamedAlternativeToPreserves(n NamedAlternative) (Value) {
+	return &Sequence{PstringToPreserves(n.VariantLabel)}
 }
 `,
 		},
@@ -229,7 +229,7 @@ func AtomKindBooleanFromPreserves(value Value) (*AtomKindBoolean) {
 	}
 	return nil
 }
-func AtomKindBooleanToPreserves(l AtomKindBoolean) (Value) {
+func AtomKindBooleanToPreserves(_ AtomKindBoolean) (Value) {
 	return NewSymbol("Boolean")
 }
 
@@ -249,7 +249,7 @@ func AtomKindDoubleFromPreserves(value Value) (*AtomKindDouble) {
 	}
 	return nil
 }
-func AtomKindDoubleToPreserves(l AtomKindDouble) (Value) {
+func AtomKindDoubleToPreserves(_ AtomKindDouble) (Value) {
 	return NewSymbol("Double")
 }
 
@@ -269,7 +269,7 @@ func AtomKindSignedIntegerFromPreserves(value Value) (*AtomKindSignedInteger) {
 	}
 	return nil
 }
-func AtomKindSignedIntegerToPreserves(l AtomKindSignedInteger) (Value) {
+func AtomKindSignedIntegerToPreserves(_ AtomKindSignedInteger) (Value) {
 	return NewSymbol("SignedInteger")
 }
 
@@ -289,7 +289,7 @@ func AtomKindStringFromPreserves(value Value) (*AtomKindString) {
 	}
 	return nil
 }
-func AtomKindStringToPreserves(l AtomKindString) (Value) {
+func AtomKindStringToPreserves(_ AtomKindString) (Value) {
 	return NewSymbol("String")
 }
 
@@ -309,7 +309,7 @@ func AtomKindByteStringFromPreserves(value Value) (*AtomKindByteString) {
 	}
 	return nil
 }
-func AtomKindByteStringToPreserves(l AtomKindByteString) (Value) {
+func AtomKindByteStringToPreserves(_ AtomKindByteString) (Value) {
 	return NewSymbol("ByteString")
 }
 
@@ -329,7 +329,7 @@ func AtomKindSymbolFromPreserves(value Value) (*AtomKindSymbol) {
 	}
 	return nil
 }
-func AtomKindSymbolToPreserves(l AtomKindSymbol) (Value) {
+func AtomKindSymbolToPreserves(_ AtomKindSymbol) (Value) {
 	return NewSymbol("Symbol")
 }
 
@@ -767,7 +767,7 @@ func EmbeddedTypeNameFalseFromPreserves(value Value) (*EmbeddedTypeNameFalse) {
 	}
 	return nil
 }
-func EmbeddedTypeNameFalseToPreserves(l EmbeddedTypeNameFalse) (Value) {
+func EmbeddedTypeNameFalseToPreserves(_ EmbeddedTypeNameFalse) (Value) {
 	return NewBoolean(false)
 }
 
@@ -879,8 +879,8 @@ func NamedAlternativeFromPreserves(value Value) (*NamedAlternative) {
 	}
 	return nil
 }
-func NamedAlternativeToPreserves(d NamedAlternative) (Value) {
-	return &Sequence{PstringToPreserves(d.VariantLabel), PatternToPreserves(d.Pattern)}
+func NamedAlternativeToPreserves(n NamedAlternative) (Value) {
+	return &Sequence{PstringToPreserves(n.VariantLabel), PatternToPreserves(n.Pattern)}
 }
 
 type NamedPattern interface {
@@ -1208,7 +1208,7 @@ func SimplePatternAnyFromPreserves(value Value) (*SimplePatternAny) {
 	}
 	return nil
 }
-func SimplePatternAnyToPreserves(l SimplePatternAny) (Value) {
+func SimplePatternAnyToPreserves(_ SimplePatternAny) (Value) {
 	return NewSymbol("any")
 }
 
@@ -1385,6 +1385,9 @@ func SimplePatternRefToPreserves(s SimplePatternRef) (Value) {
 type Version struct {
 }
 
+func NewVersion() (*Version) {
+	return &Version{}
+}
 func VersionFromPreserves(value Value) (*Version) {
 	if v := SignedIntegerFromPreserves(value); v != nil {
 		if v.Equal(NewSignedInteger("1")) {
@@ -1393,7 +1396,7 @@ func VersionFromPreserves(value Value) (*Version) {
 	}
 	return nil
 }
-func VersionToPreserves(l Version) (Value) {
+func VersionToPreserves(_ Version) (Value) {
 	return NewSignedInteger("1")
 }
 `
