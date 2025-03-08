@@ -12,23 +12,15 @@ import (
 
 	"github.com/isodude/preserves-go/lib/preserves"
 	"github.com/isodude/preserves-go/lib/preserves/text"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Lit struct {
-	Name string
 	Type preserves.Value
+	title
 }
 
 func (l *Lit) GetObjectType() ObjectType {
 	return StructObjectType
-}
-func (l *Lit) GetName() string {
-	return l.Name
-}
-func (l *Lit) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(l.Name)
 }
 func (l *Lit) Under(_ AST)              {}
 func (*Lit) SetKind(o ObjectType)       {}

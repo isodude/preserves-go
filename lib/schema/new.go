@@ -170,7 +170,7 @@ func BindingGenerator(g goast.AST, b Binding) {
 		SimplePatternGenerator(f, b.Pattern)
 		u.AddField(f)
 	} else if u, ok := g.(*goast.Field); ok {
-		u.Name = string(b.Name)
+		u.SetName(string(b.Name))
 		SimplePatternGenerator(u, b.Pattern)
 	} else {
 		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))

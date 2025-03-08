@@ -12,15 +12,15 @@ import (
 )
 
 type Passthrough struct {
-	Name            string
 	Object          string
 	ObjectType      ObjectType
 	ASTs            []AST
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func NewPassthrough(name string) *Passthrough {
-	return &Passthrough{Name: name}
+	return &Passthrough{title: title{name: name}}
 }
 
 type ObjectType int
@@ -63,19 +63,10 @@ func (p *Passthrough) GetObjectType() ObjectType {
 func (p *Passthrough) Under(a AST) {
 	p.ASTs = append(p.ASTs, a)
 }
-func (p *Passthrough) GetName() string {
-	return p.Name
-}
-func (p *Passthrough) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(p.Name)
-}
 func (*Passthrough) SetKind(o ObjectType)       {}
 func (*Passthrough) SetStructKind(o ObjectType) {}
 func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
-	name := p.Name
-	//	if above != nil {
-	//		name = fmt.Sprintf("%s%s", above.GetName(), strToCamelCase(p.Name))
-	//	}
+	name := p.GetName()
 	decl = append(decl, &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{

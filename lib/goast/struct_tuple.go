@@ -7,27 +7,18 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type StructTuple struct {
-	Name            string
 	Fields          []*ast.Field
 	Kind            ObjectType
 	mapFieldsToType map[string]ObjectType
 	identifier      []AST
+	title
 }
 
 func (t *StructTuple) GetObjectType() ObjectType {
 	return StructTupleType
-}
-func (t *StructTuple) GetName() string {
-	return t.Name
-}
-func (t *StructTuple) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(t.Name)
 }
 func (t *StructTuple) Under(_ AST)              {}
 func (*StructTuple) SetKind(o ObjectType)       {}
@@ -340,7 +331,7 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 				},
 				Y: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf("\"%s\"", t.Name),
+					Value: fmt.Sprintf("\"%s\"", t.GetName()),
 				},
 			},
 		},

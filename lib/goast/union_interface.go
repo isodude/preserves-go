@@ -4,21 +4,16 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type UnionInterface struct {
-	Name            string
 	ASTs            []AST
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func NewUnionInterface(name string) *UnionInterface {
-	return &UnionInterface{
-		Name: name,
-	}
+	return &UnionInterface{title: title{name: name}}
 }
 func (u *UnionInterface) GetObjectType() ObjectType {
 	return UnionInterfaceObjectType
@@ -28,16 +23,10 @@ func (u *UnionInterface) Under(a AST) {
 }
 func (*UnionInterface) SetKind(o ObjectType)       {}
 func (*UnionInterface) SetStructKind(o ObjectType) {}
-func (u *UnionInterface) GetName() string {
-	return u.Name
-}
-func (u *UnionInterface) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(u.Name)
-}
 func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(fmt.Sprintf("Is%s", u.Name))},
+			Names: []*ast.Ident{u.PrefixTitle("Is").Ident(nil, false)},
 			Type: &ast.FuncType{
 				Func:   token.NoPos,
 				Params: &ast.FieldList{},
@@ -55,7 +44,7 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(u.Name),
+				Name: u.Ident(nil, false),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: fields,
@@ -71,8 +60,8 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 	var elements []ast.Expr
 	var toCase []ast.Stmt
 	for _, s := range u.ASTs {
-		aName := fmt.Sprintf("%s%s", u.Name, s.GetTitle())
-		astName := ast.NewIdent(aName)
+		aName := s.GetPrefixTitle(&u.title)
+		astName := s.Ident(&u.title, false)
 
 		elements = append(elements, &ast.UnaryExpr{
 			Op: token.AND,
@@ -133,7 +122,7 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 	}
 	decl = append(decl,
 		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%sFromPreserves", u.Name)),
+			Name: (&title{name: "FromPreserves"}).Ident(&u.title, false),
 			Type: &ast.FuncType{
 
 				Params: &ast.FieldList{
@@ -147,7 +136,7 @@ func (u *UnionInterface) AST(above AST) (decl []ast.Decl) {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{},
-							Type:  ast.NewIdent(u.Name),
+							Type:  u.Ident(nil, false),
 						},
 					},
 				},

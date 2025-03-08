@@ -29,6 +29,7 @@ type AST interface {
 	Under(AST)
 	SetKind(ObjectType)
 	SetStructKind(ObjectType)
+	Title
 }
 
 type Stmt interface {
@@ -251,7 +252,7 @@ func EncodeMapping(name string, asts []AST) []ast.Decl {
 }
 
 func Encode(name string, asts []AST) string {
-	asts = append(asts, []AST{&Boolean{}, &SignedInteger{}, &Pstring{}, &Symbol{}, &Value{}}...)
+	asts = append(asts, []AST{NewBoolean(), NewSignedInteger(), NewPstring(), NewSymbol(), NewValue()}...)
 
 	astFile := &ast.File{
 		Name:  ast.NewIdent(name),

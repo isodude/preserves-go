@@ -4,159 +4,166 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"reflect"
-	"strconv"
-	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"slices"
 )
 
-type Tuple struct {
-	Fields          []*ast.Field
-	Kind            ObjectType
-	mapFieldsToType map[string]ObjectType
-	identifier      []AST
-	title
-}
-
-func (t *Tuple) GetObjectType() ObjectType {
-	return TupleType
-}
-func (t *Tuple) Under(_ AST)              {}
-func (*Tuple) SetKind(o ObjectType)       {}
-func (*Tuple) SetStructKind(o ObjectType) {}
-func (t *Tuple) AST(above AST) (decl []ast.Decl) {
-	name := t.GetTitle()
-	if above != nil {
-		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
-	}
-	var fields []*ast.Field
-	for _, field := range t.Fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-
-		var nameType ast.Expr
-		nameType = field.Type
-		if ident, ok := nameType.(*ast.Ident); ok {
-			if strings.ToLower(ident.String()) == "any" {
-				nameType = ast.NewIdent("Value")
-			}
-
-			if ident.String() == "String" {
-				nameType = ast.NewIdent("Pstring")
-			}
-		}
-
-		fname := cases.Title(language.English, cases.NoLower).String(field.Names[0].String())
-		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(fname)},
-			Type:  nameType,
-		})
-	}
-	decl = append(decl, &ast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: ast.NewIdent(name),
-				Type: &ast.StructType{
-					Fields: &ast.FieldList{
-						List: fields,
-					},
-				},
-			},
-		},
-	})
-	var smallFields []*ast.Field
-	for _, field := range fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-		if len(field.Names[0].Name) == 0 {
-			panic(fmt.Sprintf("%v %v", *t, *field))
-		}
-		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-		switch fname {
-		case "interface":
-			fallthrough
-		case "any":
-			fname = fmt.Sprintf("_%s", fname)
-		}
-		smallFields = append(smallFields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(fname)},
-			Type:  field.Type,
-		})
-	}
-	var smallValues []ast.Expr
-	for _, field := range fields {
-		if len(field.Names) < 1 {
-			continue
-		}
-		fname := fmt.Sprintf("%s%s", strings.ToLower(field.Names[0].Name[0:1]), field.Names[0].Name[1:])
-		switch fname {
-		case "interface":
-			fallthrough
-		case "any":
-			fname = fmt.Sprintf("_%s", fname)
-		}
-		smallValues = append(smallValues, &ast.KeyValueExpr{
-			Key:   field.Names[0],
-			Value: ast.NewIdent(fname),
-		})
-	}
-
-	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("New%s", name)),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: smallFields,
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  &ast.StarExpr{X: ast.NewIdent(name)},
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{List: []ast.Stmt{
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: ast.NewIdent(name),
-								Elts: smallValues,
-							},
-						},
-					},
-				},
-			},
-			},
-		},
+//	type Object struct {
+//	  Field Field
+//	  Interface Interface
+//	}
+func objectTypeSpec(prefix *title, name *title, fields []*Field) ast.Decl {
+	var (
+		list []*ast.Field
 	)
 
-	sname := &ast.StarExpr{X: ast.NewIdent(name)}
-	if above != nil {
-		decl = append(decl,
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						}},
-				},
-				Name: ast.NewIdent(fmt.Sprintf("Is%s", above.GetName())),
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{},
-				},
-				Body: &ast.BlockStmt{},
-			})
+	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{&ast.TypeSpec{
+		Name: ast.NewIdent(name.GetPrefixTitle(prefix)),
+		Type: &ast.StructType{Fields: &ast.FieldList{List: list}},
+	}}}
+
+	for _, field := range fields {
+		list = append(list, &ast.Field{Names: []*ast.Ident{field.Ident(nil, false)}, Type: field.Expr()})
 	}
+
+	return decl
+}
+
+//	func NewObject(field Field, _interface Interface) {
+//	  return &Object{Field: field, Interface: _interface }
+//	}
+func objectFuncDeclNew(prefix *title, name *title, fields []*Field) ast.Decl {
+	var (
+		params []*ast.Field
+		elts   []ast.Expr
+	)
+
+	funcDecl := &ast.FuncDecl{Name: name.Ident(prefix.PrefixTitle("New"), false),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{List: params},
+			Results: &ast.FieldList{List: []*ast.Field{
+				{Names: []*ast.Ident{}, Type: &ast.StarExpr{X: name.Ident(prefix, false)}},
+			},
+			}},
+		Body: &ast.BlockStmt{List: []ast.Stmt{&ast.ReturnStmt{Results: []ast.Expr{&ast.UnaryExpr{
+			Op: token.AND,
+			X:  &ast.CompositeLit{Type: name.Ident(nil, false), Elts: elts},
+		}}}}},
+	}
+
+	for _, field := range fields {
+		f := &ast.Field{Type: field.Expr()}
+		kv := &ast.KeyValueExpr{
+			Key: field.Ident(nil, false),
+		}
+		if slices.Contains([]string{"interface", "any"}, field.GetFieldTypeName()) {
+			f.Names = []*ast.Ident{field.Ident(&title{name: "_"}, true)}
+			kv.Value = field.Ident(&title{name: "_"}, true)
+		} else {
+			f.Names = []*ast.Ident{field.Ident(nil, true)}
+			kv.Value = field.Ident(nil, true)
+		}
+		params = append(params, f)
+		elts = append(elts, kv)
+	}
+
+	return funcDecl
+}
+
+// func (*Object) IsInterface()
+func objectFuncDeclIs(prefix *title, name *title, target *title) ast.Decl {
+	return &ast.FuncDecl{
+		Body: &ast.BlockStmt{},
+		Name: target.Ident(&title{name: "Is"}, false),
+		Recv: &ast.FieldList{List: []*ast.Field{
+			{Names: []*ast.Ident{}, Type: &ast.StarExpr{X: name.Ident(prefix, false)}},
+		}},
+		Type: &ast.FuncType{Params: &ast.FieldList{}},
+	}
+}
+
+// func ObjectFromPreserves(value Value) *Object { }
+func objectFuncDeclFromPreserves(prefix *title, name *title, fields []*Field) ast.Decl {
+	var (
+		list []ast.Stmt
+	)
+	funcDecl := &ast.FuncDecl{
+		Name: ast.NewIdent(fmt.Sprintf("%s%s", name.GetPrefixTitle(prefix), "FromPreserves")),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{List: []*ast.Field{
+				{Names: []*ast.Ident{ast.NewIdent("value")}, Type: ast.NewIdent("Value")},
+			}},
+			Results: &ast.FieldList{List: []*ast.Field{{Names: []*ast.Ident{}, Type: &ast.StarExpr{X: ast.NewIdent(name.GetPrefixTitle(prefix))}}}},
+		},
+		Body: &ast.BlockStmt{List: list},
+	}
+	return funcDecl
+}
+
+// func ObjectToPreserves(d Object) Value { }
+func objectFuncDeclToPreserves(prefix *title, name *title, fields []*Field) ast.Decl {
+	var (
+		list []ast.Stmt
+	)
+
+	funcDecl := &ast.FuncDecl{
+		Name: ast.NewIdent(fmt.Sprintf("%s%s", name.GetPrefixTitle(prefix), "ToPreserves")),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{List: []*ast.Field{
+				{Names: []*ast.Ident{ast.NewIdent("d")}, Type: ast.NewIdent(name.GetPrefixTitle(prefix))},
+			}},
+			Results: &ast.FieldList{List: []*ast.Field{
+				{Names: []*ast.Ident{}, Type: ast.NewIdent("Value")}},
+			}},
+		Body: &ast.BlockStmt{List: list},
+	}
+
+	return funcDecl
+}
+
+// return &Sequence{}
+func returnSequence(elts []ast.Expr) *ast.ReturnStmt {
+	return &ast.ReturnStmt{Results: []ast.Expr{&ast.UnaryExpr{
+		Op: token.AND,
+		X:  &ast.CompositeLit{Type: ast.NewIdent("Sequence"), Elts: elts},
+	}}}
+}
+
+/*
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Tok: token.DEFINE,
+					Lhs: []ast.Expr{
+						ast.NewIdent("seq"),
+						ast.NewIdent("ok"),
+					},
+					Rhs: []ast.Expr{
+						&ast.TypeAssertExpr{
+							X:    ast.NewIdent("value"),
+							Type: &ast.StarExpr{X: ast.NewIdent("Sequence")},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					Op: token.LAND,
+					X:  ast.NewIdent("ok"),
+					Y: &ast.BinaryExpr{
+						Op: token.EQL,
+						X: &ast.CallExpr{
+							Fun:  ast.NewIdent("len"),
+							Args: []ast.Expr{&ast.StarExpr{X: ast.NewIdent("seq")}},
+						},
+						Y: ast.NewIdent(strconv.Itoa(len(t.Fields))),
+					},
+				},
+				Body: body,
+			},
+			&ast.ReturnStmt{
+				Results: []ast.Expr{ast.NewIdent("nil")},
+			},
+		}},
+	}
+}
+
 	var returnElts []ast.Expr
 	var firstStmt, curStmt ast.Stmt
 	var keyValues []ast.Expr
@@ -387,100 +394,8 @@ func (t *Tuple) AST(above AST) (decl []ast.Decl) {
 		}}
 	}
 	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{ast.NewIdent("value")},
-							Type:  ast.NewIdent("Value"),
-						},
-					},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  sname,
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.IfStmt{
-						Init: &ast.AssignStmt{
-							Tok: token.DEFINE,
-							Lhs: []ast.Expr{
-								ast.NewIdent("seq"),
-								ast.NewIdent("ok"),
-							},
-							Rhs: []ast.Expr{
-								&ast.TypeAssertExpr{
-									X:    ast.NewIdent("value"),
-									Type: &ast.StarExpr{X: ast.NewIdent("Sequence")},
-								},
-							},
-						},
-						Cond: &ast.BinaryExpr{
-							Op: token.LAND,
-							X:  ast.NewIdent("ok"),
-							Y: &ast.BinaryExpr{
-								Op: token.EQL,
-								X: &ast.CallExpr{
-									Fun:  ast.NewIdent("len"),
-									Args: []ast.Expr{&ast.StarExpr{X: ast.NewIdent("seq")}},
-								},
-								Y: ast.NewIdent(strconv.Itoa(len(t.Fields))),
-							},
-						},
-						Body: body,
-					},
-					&ast.ReturnStmt{
-						Results: []ast.Expr{ast.NewIdent("nil")},
-					},
-				},
-			},
-		},
+		,
 	)
 
 	decl = append(decl,
-		&ast.FuncDecl{
-			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "ToPreserves")),
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{ast.NewIdent("d")},
-							Type:  ast.NewIdent(name),
-						},
-					},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{},
-							Type:  ast.NewIdent("Value"),
-						},
-					},
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.ReturnStmt{
-						Results: []ast.Expr{
-							&ast.UnaryExpr{
-								Op: token.AND,
-								X: &ast.CompositeLit{
-									Type: ast.NewIdent("Sequence"),
-									Elts: keyValues,
-								},
-							},
-						},
-					}},
-			},
-		},
-	)
-	return
-}
+*/

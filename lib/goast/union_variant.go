@@ -4,21 +4,16 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type UnionVariant struct {
-	Name            string
 	ASTs            []AST
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func NewUnionVariant(name string) *UnionVariant {
-	return &UnionVariant{
-		Name: name,
-	}
+	return &UnionVariant{title: title{name: name}}
 }
 func (u *UnionVariant) GetObjectType() ObjectType {
 	return UnionVariantObjectType
@@ -28,12 +23,6 @@ func (u *UnionVariant) Under(a AST) {
 }
 func (*UnionVariant) SetKind(o ObjectType)       {}
 func (*UnionVariant) SetStructKind(o ObjectType) {}
-func (u *UnionVariant) GetName() string {
-	return u.Name
-}
-func (u *UnionVariant) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(u.Name)
-}
 
 /*
 type EmbeddedTypeNameVariant string
@@ -81,7 +70,7 @@ func (u *UnionVariant) AST(above AST) (decl []ast.Decl) {
 	if above != nil {
 		name = fmt.Sprintf("%s%s", above.GetTitle(), name)
 	}
-	astVariant := ast.NewIdent(fmt.Sprintf("%sVariant", u.Name))
+	astVariant := (&title{name: "Variant"}).Ident(&u.title, false)
 	h := &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
@@ -107,7 +96,7 @@ func (u *UnionVariant) AST(above AST) (decl []ast.Decl) {
 			Tok: token.CONST,
 			Specs: []ast.Spec{
 				&ast.ValueSpec{
-					Names:  []*ast.Ident{ast.NewIdent(fmt.Sprintf("%sVariant%s", u.Name, a.GetTitle()))},
+					Names:  []*ast.Ident{a.Ident((&title{name: "Variant"}).PrefixTitle(u.GetName()), false)},
 					Type:   astVariant,
 					Values: []ast.Expr{&ast.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("\"%s\"", a.GetName())}},
 				},
@@ -169,7 +158,7 @@ func (u *UnionVariant) AST(above AST) (decl []ast.Decl) {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{},
-							Type:  &ast.StarExpr{X: ast.NewIdent(u.Name)},
+							Type:  &ast.StarExpr{X: u.Ident(nil, false)},
 						},
 					},
 				},

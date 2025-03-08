@@ -3,21 +3,16 @@ package goast
 import (
 	"fmt"
 	"go/ast"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Union struct {
-	Name            string
 	ASTs            []AST
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func NewUnion(name string) *Union {
-	return &Union{
-		Name: name,
-	}
+	return &Union{title: title{name: name}}
 }
 func (u *Union) GetObjectType() ObjectType {
 	/*allLit := true
@@ -42,12 +37,6 @@ func (u *Union) Under(a AST) {
 }
 func (*Union) SetKind(o ObjectType)       {}
 func (*Union) SetStructKind(o ObjectType) {}
-func (u *Union) GetName() string {
-	return u.Name
-}
-func (u *Union) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(u.Name)
-}
 func (u *Union) AST(above AST) (decl []ast.Decl) {
 	name := u.GetName()
 	if above != nil {

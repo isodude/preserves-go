@@ -4,26 +4,38 @@ import (
 	"go/ast"
 
 	"github.com/isodude/preserves-go/lib/preserves"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
+type fieldType interface {
+	Expr() ast.Expr
+	Name() string
+}
+
 type Field struct {
-	Name            string
 	ASTs            []AST
 	Type            string
+	fieldType       fieldType
 	Array           bool
 	Dict            bool
 	DictKey         AST
 	DictValue       AST
 	Value           preserves.Value
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func NewField(name string) *Field {
-	return &Field{
-		Name: name,
-	}
+	f := &Field{}
+	f.SetName(name)
+	return f
+}
+
+func (f *Field) Expr() ast.Expr {
+	return f.fieldType.Expr()
+}
+
+func (f *Field) GetFieldTypeName() string {
+	return f.fieldType.Name()
 }
 
 func (f *Field) SetArray() {
@@ -45,7 +57,7 @@ func (f *Field) ConvertToMap(a AST) *Map {
 	if u, ok := f.DictValue.(*Field); ok {
 		value = u.Type
 	}
-	return &Map{Name: a.GetName(), Key: key, Value: value}
+	return &Map{title: *a.Title(), Key: key, Value: value}
 }
 func (f *Field) GetObjectType() ObjectType {
 	/*allLit := true
@@ -73,18 +85,12 @@ func (*Field) SetKind(o ObjectType) {}
 func (f *Field) SetType(s string) {
 	f.Type = s
 }
-func (*Field) SetStructKind(o ObjectType) {}
-func (f *Field) GetName() string {
-	return f.Name
-}
-func (f *Field) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(f.Name)
-}
+func (*Field) SetStructKind(o ObjectType)    {}
 func (f *Field) AST(_ AST) (decl []ast.Decl) { return }
 func (f *Field) ASTField() *ast.Field {
 	if f.Array {
 		return &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(f.Name)},
+			Names: []*ast.Ident{f.Ident(nil, false)},
 			Type:  &ast.ArrayType{Elt: ast.NewIdent(f.Type)},
 		}
 	}
@@ -95,7 +101,7 @@ func (f *Field) ASTField() *ast.Field {
 		}
 	}
 	return &ast.Field{
-		Names: []*ast.Ident{ast.NewIdent(f.Name)},
+		Names: []*ast.Ident{f.Ident(nil, false)},
 		Type:  ast.NewIdent(f.Type),
 	}
 }

@@ -6,12 +6,9 @@ import (
 	"strings"
 
 	"github.com/isodude/preserves-go/lib/preserves"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Definition struct {
-	Name            string
 	ASTs            []AST
 	Fields          []*ast.Field
 	ASTFields       []*Field
@@ -21,12 +18,11 @@ type Definition struct {
 	Identifier      []AST
 	mapFieldsToType map[string]ObjectType
 	MapKeyToField   []preserves.Value
+	title
 }
 
 func NewDefinition(name string) *Definition {
-	return &Definition{
-		Name: name,
-	}
+	return &Definition{title: title{name: name}}
 }
 
 func (d *Definition) SetValue(v preserves.Value) {
@@ -57,12 +53,6 @@ func (d *Definition) SetKind(o ObjectType) {
 }
 func (d *Definition) SetStructKind(o ObjectType) {
 	d.StructKind = &o
-}
-func (d *Definition) GetName() string {
-	return d.Name
-}
-func (d *Definition) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(d.Name)
 }
 func (d *Definition) AST(above AST) (decl []ast.Decl) {
 	name := d.GetTitle()
@@ -99,7 +89,7 @@ func (d *Definition) AST(above AST) (decl []ast.Decl) {
 			panic(fmt.Sprintf("d.StructKind for %s is nil", name))
 		}
 		s := &Struct{
-			Name:            d.Name,
+			title:           d.title,
 			Fields:          d.Fields,
 			StructKind:      *d.StructKind,
 			mapFieldsToType: d.mapFieldsToType,

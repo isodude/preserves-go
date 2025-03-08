@@ -5,25 +5,18 @@ import (
 	"go/ast"
 	"go/token"
 	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Map struct {
-	Name            string
 	Key             string
 	Value           string
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func (m *Map) GetObjectType() ObjectType {
 	return MapObjectType
 }
-func (m *Map) GetName() string {
-	return m.Name
-}
-func (m *Map) GetTitle() string         { return cases.Title(language.English, cases.NoLower).String(m.Name) }
 func (m *Map) Under(_ AST)              {}
 func (*Map) SetKind(o ObjectType)       {}
 func (*Map) SetStructKind(o ObjectType) {}

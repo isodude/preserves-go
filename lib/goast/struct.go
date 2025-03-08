@@ -12,7 +12,6 @@ import (
 )
 
 type Struct struct {
-	Name            string
 	Fields          []*ast.Field
 	ASTFields       []*Field
 	Identifier      []AST
@@ -21,10 +20,13 @@ type Struct struct {
 	StructKind      ObjectType
 	mapFieldsToType map[string]ObjectType
 	MapKeyToField   []preserves.Value
+	title
 }
 
 func NewStruct(name string) *Struct {
-	return &Struct{Name: name}
+	s := &Struct{}
+	s.SetName(name)
+	return s
 }
 func (s *Struct) Stmt(key ast.Expr, stmts []ast.Stmt) ast.Stmt {
 	if u, ok := s.GetStructKind().(Stmt); ok {
@@ -53,12 +55,6 @@ func (s *Struct) Under(_ AST) {}
 func (s *Struct) AddField(a *Field) {
 	s.ASTFields = append(s.ASTFields, a)
 }
-func (s *Struct) GetName() string {
-	return s.Name
-}
-func (s *Struct) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(s.Name)
-}
 func (s *Struct) SetKind(o ObjectType) {
 	s.Kind = o
 }
@@ -69,60 +65,54 @@ func (s *Struct) GetStructKind() AST {
 	switch s.StructKind {
 	case LitType:
 		return &Lit{
-			Name: s.Name,
-			Type: s.Value,
+			title: s.title,
+			Type:  s.Value,
 		}
 	case StructRecType:
-		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
-		return &Rec{
-			Name:            s.Name,
-			Fields:          s.Fields,
-			mapFieldsToType: s.mapFieldsToType,
-			identifier:      s.Identifier,
-		}
+		panic(fmt.Sprintf("%s: %d: %v", s.GetName(), s.StructKind, s))
 	case StructDictType:
 		return &StructDict{
-			Name:            s.Name,
+			title:           s.title,
 			Fields:          s.Fields,
 			mapFieldsToType: s.mapFieldsToType,
 			mapKeyToField:   s.MapKeyToField,
 			identifier:      s.Identifier,
 		}
 	case FirstArrayType:
-		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+		panic(fmt.Sprintf("%s: %d: %v", s.GetName(), s.StructKind, s))
 	case LastArrayType:
-		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+		panic(fmt.Sprintf("%s: %d: %v", s.GetName(), s.StructKind, s))
 	case AllSameTypeArrayType:
-		panic(fmt.Sprintf("%s: %d: %v", s.Name, s.StructKind, s))
+		panic(fmt.Sprintf("%s: %d: %v", s.GetName(), s.StructKind, s))
 	case TupleType:
 		return &Tuple{
-			Name:            s.Name,
+			title:           s.title,
 			Fields:          s.Fields,
 			mapFieldsToType: s.mapFieldsToType,
 			identifier:      s.Identifier,
 		}
 	case StructTupleType:
 		return &StructTuple{
-			Name:            s.Name,
+			title:           s.title,
 			Fields:          s.Fields,
 			mapFieldsToType: s.mapFieldsToType,
 			identifier:      s.Identifier,
 		}
 	case StructTuplePrefixType:
 		return &TuplePrefix{
-			Name:            s.Name,
+			title:           s.title,
 			Fields:          s.Fields,
 			mapFieldsToType: s.mapFieldsToType,
 			identifier:      s.Identifier,
 		}
 	case StructSeqofType:
 		return &Seqof{
-			Name:            s.Name,
+			title:           s.title,
 			Fields:          s.Fields,
 			mapFieldsToType: s.mapFieldsToType,
 		}
 	default:
-		panic(fmt.Sprintf("%s: %d", s.Name, s.StructKind))
+		panic(fmt.Sprintf("%s: %d", s.GetName(), s.StructKind))
 	}
 }
 

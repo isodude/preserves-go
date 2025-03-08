@@ -7,26 +7,17 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Seqof struct {
-	Name            string
 	Fields          []*ast.Field
 	Kind            ObjectType
 	mapFieldsToType map[string]ObjectType
+	title
 }
 
 func (s *Seqof) GetObjectType() ObjectType {
 	return StructSeqofType
-}
-func (s *Seqof) GetName() string {
-	return s.Name
-}
-func (s *Seqof) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(s.Name)
 }
 func (s *Seqof) Under(_ AST)              {}
 func (*Seqof) SetKind(o ObjectType)       {}

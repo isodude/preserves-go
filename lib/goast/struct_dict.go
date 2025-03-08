@@ -10,30 +10,22 @@ import (
 	"strings"
 
 	"github.com/isodude/preserves-go/lib/preserves"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type StructDict struct {
-	Name            string
 	Fields          []*ast.Field
 	Kind            ObjectType
 	StructKind      ObjectType
 	mapFieldsToType map[string]ObjectType
 	mapKeyToField   []preserves.Value
 	identifier      []AST
+	title
 }
 
 func (d *StructDict) GetObjectType() ObjectType {
 	return StructDictType
 }
 func (d *StructDict) Under(_ AST) {}
-func (d *StructDict) GetName() string {
-	return d.Name
-}
-func (d *StructDict) GetTitle() string {
-	return cases.Title(language.English, cases.NoLower).String(d.Name)
-}
 func (d *StructDict) SetKind(o ObjectType) {
 	d.Kind = o
 }
@@ -47,8 +39,8 @@ func (s *Struct) FromPreserves(Value) *Struct {
 }
 */
 func (d *StructDict) AST(above AST) (decl []ast.Decl) {
-	name := d.Name
-	sname := &ast.StarExpr{X: ast.NewIdent(d.Name)}
+	name := d.GetName()
+	sname := &ast.StarExpr{X: d.Ident(nil, false)}
 	/*
 		func (*Lit) FromPreserves(value Value) *Lit {
 			if rec, ok := value.(*Record); ok && len(rec.Fields) == 1 {
@@ -280,7 +272,7 @@ func (d *StructDict) AST(above AST) (decl []ast.Decl) {
 				},
 				Y: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: strconv.Quote(d.Name),
+					Value: strconv.Quote(d.GetName()),
 				},
 			},
 		},
