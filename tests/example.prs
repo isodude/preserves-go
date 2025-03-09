@@ -6,4 +6,4 @@ Shoe = <shoe @kind string>.
 Item = Hat / Jacket / Shoe .
 Object = Item / Person .
 Date = <date @year int @month int @day int>.
-Person = <person @name string @birthday Date @wears [Object ...] >.
+Person = <person @name string @birthday Date @wears [Object ...]>.

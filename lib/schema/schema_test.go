@@ -161,6 +161,14 @@ func TestF(t *testing.T) {
 	if v == nil {
 		t.Fatalf("v was nil")
 	}
+
+	s := SchemaToPreserves(*v)
+
+	m, err := text.FromPreserves(s).(encoding.TextMarshaler).MarshalText()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("debug: %s\n", string(m))
 	b := NewBundle(NewModules().Add(*NewModulePath(), *v))
 	bundle := BundleGenerator("schema", *b)
 	var r []goast.AST
