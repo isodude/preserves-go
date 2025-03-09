@@ -51,6 +51,9 @@ func AtomKindToPreserves(s AtomKind) Value {
 type AtomKindBoolean struct {
 }
 
+func NewAtomKindBoolean() *AtomKindBoolean {
+	return &AtomKindBoolean{}
+}
 func (*AtomKindBoolean) IsAtomKind() {
 }
 func AtomKindBooleanFromPreserves(value Value) *AtomKindBoolean {
@@ -61,13 +64,16 @@ func AtomKindBooleanFromPreserves(value Value) *AtomKindBoolean {
 	}
 	return nil
 }
-func AtomKindBooleanToPreserves(l AtomKindBoolean) Value {
+func AtomKindBooleanToPreserves(_ AtomKindBoolean) Value {
 	return NewSymbol("Boolean")
 }
 
 type AtomKindDouble struct {
 }
 
+func NewAtomKindDouble() *AtomKindDouble {
+	return &AtomKindDouble{}
+}
 func (*AtomKindDouble) IsAtomKind() {
 }
 func AtomKindDoubleFromPreserves(value Value) *AtomKindDouble {
@@ -78,13 +84,16 @@ func AtomKindDoubleFromPreserves(value Value) *AtomKindDouble {
 	}
 	return nil
 }
-func AtomKindDoubleToPreserves(l AtomKindDouble) Value {
+func AtomKindDoubleToPreserves(_ AtomKindDouble) Value {
 	return NewSymbol("Double")
 }
 
 type AtomKindSignedInteger struct {
 }
 
+func NewAtomKindSignedInteger() *AtomKindSignedInteger {
+	return &AtomKindSignedInteger{}
+}
 func (*AtomKindSignedInteger) IsAtomKind() {
 }
 func AtomKindSignedIntegerFromPreserves(value Value) *AtomKindSignedInteger {
@@ -95,13 +104,16 @@ func AtomKindSignedIntegerFromPreserves(value Value) *AtomKindSignedInteger {
 	}
 	return nil
 }
-func AtomKindSignedIntegerToPreserves(l AtomKindSignedInteger) Value {
+func AtomKindSignedIntegerToPreserves(_ AtomKindSignedInteger) Value {
 	return NewSymbol("SignedInteger")
 }
 
 type AtomKindString struct {
 }
 
+func NewAtomKindString() *AtomKindString {
+	return &AtomKindString{}
+}
 func (*AtomKindString) IsAtomKind() {
 }
 func AtomKindStringFromPreserves(value Value) *AtomKindString {
@@ -112,13 +124,16 @@ func AtomKindStringFromPreserves(value Value) *AtomKindString {
 	}
 	return nil
 }
-func AtomKindStringToPreserves(l AtomKindString) Value {
+func AtomKindStringToPreserves(_ AtomKindString) Value {
 	return NewSymbol("String")
 }
 
 type AtomKindByteString struct {
 }
 
+func NewAtomKindByteString() *AtomKindByteString {
+	return &AtomKindByteString{}
+}
 func (*AtomKindByteString) IsAtomKind() {
 }
 func AtomKindByteStringFromPreserves(value Value) *AtomKindByteString {
@@ -129,13 +144,16 @@ func AtomKindByteStringFromPreserves(value Value) *AtomKindByteString {
 	}
 	return nil
 }
-func AtomKindByteStringToPreserves(l AtomKindByteString) Value {
+func AtomKindByteStringToPreserves(_ AtomKindByteString) Value {
 	return NewSymbol("ByteString")
 }
 
 type AtomKindSymbol struct {
 }
 
+func NewAtomKindSymbol() *AtomKindSymbol {
+	return &AtomKindSymbol{}
+}
 func (*AtomKindSymbol) IsAtomKind() {
 }
 func AtomKindSymbolFromPreserves(value Value) *AtomKindSymbol {
@@ -146,7 +164,7 @@ func AtomKindSymbolFromPreserves(value Value) *AtomKindSymbol {
 	}
 	return nil
 }
-func AtomKindSymbolToPreserves(l AtomKindSymbol) Value {
+func AtomKindSymbolToPreserves(_ AtomKindSymbol) Value {
 	return NewSymbol("Symbol")
 }
 
@@ -472,8 +490,8 @@ type DefinitionPattern struct {
 	Pattern
 }
 
-func NewDefinitionPattern(obj Pattern) *DefinitionPattern {
-	return &DefinitionPattern{Pattern: obj}
+func NewDefinitionPattern(pattern Pattern) *DefinitionPattern {
+	return &DefinitionPattern{Pattern: pattern}
 }
 func (*DefinitionPattern) IsDefinition() {
 }
@@ -571,6 +589,9 @@ func EmbeddedTypeNameToPreserves(s EmbeddedTypeName) Value {
 type EmbeddedTypeNameFalse struct {
 }
 
+func NewEmbeddedTypeNameFalse() *EmbeddedTypeNameFalse {
+	return &EmbeddedTypeNameFalse{}
+}
 func (*EmbeddedTypeNameFalse) IsEmbeddedTypeName() {
 }
 func EmbeddedTypeNameFalseFromPreserves(value Value) *EmbeddedTypeNameFalse {
@@ -581,7 +602,7 @@ func EmbeddedTypeNameFalseFromPreserves(value Value) *EmbeddedTypeNameFalse {
 	}
 	return nil
 }
-func EmbeddedTypeNameFalseToPreserves(l EmbeddedTypeNameFalse) Value {
+func EmbeddedTypeNameFalseToPreserves(_ EmbeddedTypeNameFalse) Value {
 	return NewBoolean(false)
 }
 
@@ -589,8 +610,8 @@ type EmbeddedTypeNameRef struct {
 	Ref
 }
 
-func NewEmbeddedTypeNameRef(obj Ref) *EmbeddedTypeNameRef {
-	return &EmbeddedTypeNameRef{Ref: obj}
+func NewEmbeddedTypeNameRef(ref Ref) *EmbeddedTypeNameRef {
+	return &EmbeddedTypeNameRef{Ref: ref}
 }
 func (*EmbeddedTypeNameRef) IsEmbeddedTypeName() {
 }
@@ -693,8 +714,8 @@ func NamedAlternativeFromPreserves(value Value) *NamedAlternative {
 	}
 	return nil
 }
-func NamedAlternativeToPreserves(d NamedAlternative) Value {
-	return &Sequence{PstringToPreserves(d.VariantLabel), PatternToPreserves(d.Pattern)}
+func NamedAlternativeToPreserves(n NamedAlternative) Value {
+	return &Sequence{PstringToPreserves(n.VariantLabel), PatternToPreserves(n.Pattern)}
 }
 
 type NamedPattern interface {
@@ -724,8 +745,8 @@ type NamedPatternNamed struct {
 	Binding
 }
 
-func NewNamedPatternNamed(obj Binding) *NamedPatternNamed {
-	return &NamedPatternNamed{Binding: obj}
+func NewNamedPatternNamed(binding Binding) *NamedPatternNamed {
+	return &NamedPatternNamed{Binding: binding}
 }
 func (*NamedPatternNamed) IsNamedPattern() {
 }
@@ -743,8 +764,8 @@ type NamedPatternAnonymous struct {
 	Pattern
 }
 
-func NewNamedPatternAnonymous(obj Pattern) *NamedPatternAnonymous {
-	return &NamedPatternAnonymous{Pattern: obj}
+func NewNamedPatternAnonymous(pattern Pattern) *NamedPatternAnonymous {
+	return &NamedPatternAnonymous{Pattern: pattern}
 }
 func (*NamedPatternAnonymous) IsNamedPattern() {
 }
@@ -785,8 +806,8 @@ type NamedSimplePatternNamed struct {
 	Binding
 }
 
-func NewNamedSimplePatternNamed(obj Binding) *NamedSimplePatternNamed {
-	return &NamedSimplePatternNamed{Binding: obj}
+func NewNamedSimplePatternNamed(binding Binding) *NamedSimplePatternNamed {
+	return &NamedSimplePatternNamed{Binding: binding}
 }
 func (*NamedSimplePatternNamed) IsNamedSimplePattern() {
 }
@@ -804,8 +825,8 @@ type NamedSimplePatternAnonymous struct {
 	SimplePattern
 }
 
-func NewNamedSimplePatternAnonymous(obj SimplePattern) *NamedSimplePatternAnonymous {
-	return &NamedSimplePatternAnonymous{SimplePattern: obj}
+func NewNamedSimplePatternAnonymous(simplePattern SimplePattern) *NamedSimplePatternAnonymous {
+	return &NamedSimplePatternAnonymous{SimplePattern: simplePattern}
 }
 func (*NamedSimplePatternAnonymous) IsNamedSimplePattern() {
 }
@@ -846,8 +867,8 @@ type PatternSimplePattern struct {
 	SimplePattern
 }
 
-func NewPatternSimplePattern(obj SimplePattern) *PatternSimplePattern {
-	return &PatternSimplePattern{SimplePattern: obj}
+func NewPatternSimplePattern(simplePattern SimplePattern) *PatternSimplePattern {
+	return &PatternSimplePattern{SimplePattern: simplePattern}
 }
 func (*PatternSimplePattern) IsPattern() {
 }
@@ -865,8 +886,8 @@ type PatternCompoundPattern struct {
 	CompoundPattern
 }
 
-func NewPatternCompoundPattern(obj CompoundPattern) *PatternCompoundPattern {
-	return &PatternCompoundPattern{CompoundPattern: obj}
+func NewPatternCompoundPattern(compoundPattern CompoundPattern) *PatternCompoundPattern {
+	return &PatternCompoundPattern{CompoundPattern: compoundPattern}
 }
 func (*PatternCompoundPattern) IsPattern() {
 }
@@ -1009,6 +1030,9 @@ func SimplePatternToPreserves(s SimplePattern) Value {
 type SimplePatternAny struct {
 }
 
+func NewSimplePatternAny() *SimplePatternAny {
+	return &SimplePatternAny{}
+}
 func (*SimplePatternAny) IsSimplePattern() {
 }
 func SimplePatternAnyFromPreserves(value Value) *SimplePatternAny {
@@ -1019,7 +1043,7 @@ func SimplePatternAnyFromPreserves(value Value) *SimplePatternAny {
 	}
 	return nil
 }
-func SimplePatternAnyToPreserves(l SimplePatternAny) Value {
+func SimplePatternAnyToPreserves(_ SimplePatternAny) Value {
 	return NewSymbol("any")
 }
 
@@ -1178,8 +1202,8 @@ type SimplePatternRef struct {
 	Ref
 }
 
-func NewSimplePatternRef(obj Ref) *SimplePatternRef {
-	return &SimplePatternRef{Ref: obj}
+func NewSimplePatternRef(ref Ref) *SimplePatternRef {
+	return &SimplePatternRef{Ref: ref}
 }
 func (*SimplePatternRef) IsSimplePattern() {
 }
@@ -1196,6 +1220,9 @@ func SimplePatternRefToPreserves(s SimplePatternRef) Value {
 type Version struct {
 }
 
+func NewVersion() *Version {
+	return &Version{}
+}
 func VersionFromPreserves(value Value) *Version {
 	if v := SignedIntegerFromPreserves(value); v != nil {
 		if v.Equal(NewSignedInteger("1")) {
@@ -1204,6 +1231,6 @@ func VersionFromPreserves(value Value) *Version {
 	}
 	return nil
 }
-func VersionToPreserves(l Version) Value {
+func VersionToPreserves(_ Version) Value {
 	return NewSignedInteger("1")
 }

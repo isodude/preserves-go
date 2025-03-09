@@ -143,7 +143,14 @@ func TestE(t *testing.T) {
 	if v == nil {
 		t.Fatalf("v was nil")
 	}
-	fmt.Printf("%s\n", goast.EncodeToGoAST("schema", v))
+	b := NewBundle(NewModules().Add(*NewModulePath(), *v))
+	bundle := BundleGenerator("schema", *b)
+	var r []goast.AST
+	for _, d := range bundle.Definitions() {
+		r = append(r, d)
+	}
+
+	fmt.Printf("%s\n", goast.Encode("schema", r))
 	t.Fatal("beep")
 }
 func TestF(t *testing.T) {
@@ -154,7 +161,14 @@ func TestF(t *testing.T) {
 	if v == nil {
 		t.Fatalf("v was nil")
 	}
-	fmt.Printf("%s\n", goast.EncodeToGoAST("schema", v))
+	b := NewBundle(NewModules().Add(*NewModulePath(), *v))
+	bundle := BundleGenerator("schema", *b)
+	var r []goast.AST
+	for _, d := range bundle.Definitions() {
+		r = append(r, d)
+	}
+
+	fmt.Printf("%s\n", goast.Encode("schema", r))
 	fmt.Printf("%s\n", SchemaToPreservesSchema(*v, ""))
 	t.Fatal("example")
 }
@@ -166,7 +180,14 @@ func TestG(t *testing.T) {
 	if v == nil {
 		t.Fatalf("v was nil")
 	}
-	fmt.Printf("%s\n", goast.EncodeToGoAST("schema", v))
+	b := NewBundle(NewModules().Add(*NewModulePath(), *v))
+	bundle := BundleGenerator("schema", *b)
+	var r []goast.AST
+	for _, d := range bundle.Definitions() {
+		r = append(r, d)
+	}
+
+	fmt.Printf("%s\n", goast.Encode("schema", r))
 	t.Fatal("beep")
 }
 func TestDump(t *testing.T) {

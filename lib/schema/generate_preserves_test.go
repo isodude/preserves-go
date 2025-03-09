@@ -1404,7 +1404,7 @@ func VersionToPreserves(_ Version) (Value) {
 	for _, d := range bundle.Definitions() {
 		r = append(r, d)
 	}
-	code := goast.Encode(bundle.Name, r)
+	code := goast.Encode(bundle.GetName(), r)
 	if code != result {
 		t.Fatalf("diff was %s", diff.Diff(result, code))
 	}

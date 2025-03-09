@@ -5,15 +5,13 @@ import (
 )
 
 type Bundle struct {
-	Name    string
 	Paths   [][]string
 	Schemas []*Schema
+	title
 }
 
 func NewBundle(name string) *Bundle {
-	return &Bundle{
-		Name: name,
-	}
+	return &Bundle{title: title{name: name}}
 }
 
 func (b *Bundle) AddSchema(path []string, schema *Schema) {
@@ -28,9 +26,13 @@ func (b *Bundle) Definitions() (d []*Definition) {
 	return
 }
 
-func (b *Bundle) AST() (r []*ast.Decl) {
+func (b *Bundle) AST(_ AST) (r []ast.Decl) {
 	return
 }
+func (b *Bundle) GetObjectType() ObjectType  { return InvalidObjectType }
+func (b *Bundle) SetKind(_ ObjectType)       { return }
+func (b *Bundle) SetStructKind(_ ObjectType) { return }
+func (b *Bundle) Under(_ AST)                { return }
 
 type Schema struct {
 	Version      *Field
