@@ -145,9 +145,7 @@ func NamedPatternNamedGenerator(g goast.AST, n *NamedPatternNamed) {
 	f := &goast.Field{}
 	BindingGenerator(f, n.Binding)
 
-	if u, ok := g.(*goast.Struct); ok {
-		u.AddField(f)
-	} else if u, ok := g.(*goast.Definition); ok {
+	if u, ok := g.(*goast.Definition); ok {
 		u.AddField(f)
 	} else {
 		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
@@ -161,11 +159,7 @@ func NamedPatternAnonymousGenerator(g goast.AST, n *NamedPatternAnonymous) {
 }
 
 func BindingGenerator(g goast.AST, b Binding) {
-	if u, ok := g.(*goast.Struct); ok {
-		f := goast.NewField(string(b.Name))
-		SimplePatternGenerator(f, b.Pattern)
-		u.AddField(f)
-	} else if u, ok := g.(*goast.Definition); ok {
+	if u, ok := g.(*goast.Definition); ok {
 		f := goast.NewField(string(b.Name))
 		SimplePatternGenerator(f, b.Pattern)
 		u.AddField(f)
@@ -225,11 +219,6 @@ func SimplePatternSeqofGenerator(g goast.AST, s SimplePattern) {
 		f.SetArray()
 		SimplePatternGenerator(f, s)
 		u.AddField(f)
-	} else if u, ok := g.(*goast.Struct); ok {
-		f := &goast.Field{}
-		f.SetArray()
-		SimplePatternGenerator(f, s)
-		u.AddField(f)
 	} else {
 		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
 	}
@@ -278,14 +267,13 @@ func AtomKindGenerator(g goast.AST, a AtomKind) {
 func SimplePatternLitGenerator(g goast.AST, l *SimplePatternLit) {
 	if u, ok := g.(*goast.Field); ok {
 		u.SetValue(l.Value)
-	} else if u, ok := g.(*goast.Struct); ok {
-		u.SetKind(goast.StructObjectType)
-		u.SetValue(l.Value)
+	} else if u, ok := g.(*goast.Label); ok {
+		u.SetStmt(goast.NewLit(l.Value))
 	} else if u, ok := g.(*goast.Definition); ok {
 		u.SetKind(goast.StructObjectType)
 		u.SetValue(l.Value)
 	} else {
-		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
+		panic(fmt.Sprintf("unknown type %v, %v", reflect.TypeOf(g), g))
 	}
 }
 func RefGenerator(g goast.AST, r *Ref) {
@@ -296,16 +284,6 @@ func RefGenerator(g goast.AST, r *Ref) {
 		}
 
 		u.SetType(fmt.Sprintf("%s%s", module, r.Name))
-	} else if u, ok := g.(*goast.Struct); ok {
-		u.SetStructKind(goast.StructTupleType)
-		f := goast.NewField("")
-		module := ""
-		if len(r.Module) > 0 {
-			module = fmt.Sprintf("%s.", r.Module[len(r.Module)-1])
-		}
-
-		f.SetType(fmt.Sprintf("%s%s", module, r.Name))
-		u.AddField(f)
 	} else if u, ok := g.(*goast.Definition); ok {
 		u.SetKind(goast.PassthroughObjectType)
 		u.SetStructKind(goast.StructTupleType)
@@ -340,30 +318,14 @@ func CompoundPatternGenerator(g goast.AST, c CompoundPattern) {
 func CompoundPatternRecGenerator(g goast.AST, c CompoundPatternRec) {
 	g.SetKind(goast.StructObjectType)
 	g.SetStructKind(goast.StructRecType)
-	s := &goast.Struct{}
-	NamedPatternGenerator(s, c.Label)
-	if u, ok := g.(*goast.Struct); ok {
-		u.Identifier = []goast.AST{s}
-	} else if u, ok := g.(*goast.Definition); ok {
-		u.Identifier = []goast.AST{s}
+	l := goast.NewLabel()
+	NamedPatternGenerator(l, c.Label)
+	if u, ok := g.(*goast.Definition); ok {
+		u.Identifier = l
 	} else {
 		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
 	}
 	NamedPatternGenerator(g, c.Fields)
-	/*
-	   f := &goast.Field{}
-	   NamedPatternGenerator(f, c.Fields)
-
-	   	if u, ok := g.(*goast.Struct); ok {
-	   		u.AddField(f)
-	   	} else if u, ok := g.(*goast.Definition); ok {
-
-	   		u.AddField(f)
-	   	} else {
-
-	   		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
-	   	}
-	*/
 }
 func CompoundPatternTupleGenerator(g goast.AST, c CompoundPatternTuple) {
 	g.SetKind(goast.StructObjectType)
@@ -373,8 +335,6 @@ func CompoundPatternTupleGenerator(g goast.AST, c CompoundPatternTuple) {
 		} else {
 			u.SetStructKind(goast.TupleType)
 		}
-	} else if u, ok := g.(*goast.Struct); ok {
-		u.SetStructKind(goast.StructTupleType)
 	} else {
 		panic("should not reach here")
 	}
@@ -394,8 +354,6 @@ func CompoundPatternTuplePrefixGenerator(g goast.AST, c CompoundPatternTuplePref
 		NamedPatternGenerator(f, pattern)
 		if u, ok := g.(*goast.Definition); ok {
 			u.AddField(f)
-		} else if u, ok := g.(*goast.Struct); ok {
-			u.AddField(f)
 		} else {
 			panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
 		}
@@ -408,8 +366,6 @@ func CompoundPatternTuplePrefixGenerator(g goast.AST, c CompoundPatternTuplePref
 	f.SetArray()
 	NamedSimplePatternGenerator(f, c.Variable)
 	if u, ok := g.(*goast.Definition); ok {
-		u.AddField(f)
-	} else if u, ok := g.(*goast.Struct); ok {
 		u.AddField(f)
 	} else {
 		panic(fmt.Sprintf("unknown type %v", reflect.TypeOf(g)))
@@ -440,9 +396,6 @@ func DictionaryEntriesGenerator(g goast.AST, d DictionaryEntries) {
 		f := &goast.Field{}
 		NamedSimplePatternGenerator(f, v)
 		if u, ok := g.(*goast.Definition); ok {
-			u.AddField(f)
-			u.MapKeyToField = append(u.MapKeyToField, k)
-		} else if u, ok := g.(*goast.Struct); ok {
 			u.AddField(f)
 			u.MapKeyToField = append(u.MapKeyToField, k)
 		} else {

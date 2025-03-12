@@ -15,7 +15,7 @@ type Definition struct {
 	Kind            *ObjectType
 	StructKind      *ObjectType
 	Value           preserves.Value
-	Identifier      []AST
+	Identifier      Stmt
 	mapFieldsToType map[string]ObjectType
 	MapKeyToField   []preserves.Value
 	title

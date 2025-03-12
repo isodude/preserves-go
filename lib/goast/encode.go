@@ -34,8 +34,6 @@ type AST interface {
 
 type Stmt interface {
 	Stmt(ast.Expr, []ast.Stmt) ast.Stmt
-}
-type ToStmt interface {
 	ToStmt(ast.Expr) []ast.Expr
 }
 type Encoder interface {

@@ -19,6 +19,9 @@ type Lit struct {
 	title
 }
 
+func NewLit(v preserves.Value) *Lit {
+	return &Lit{Type: v}
+}
 func (l *Lit) GetObjectType() ObjectType {
 	return StructObjectType
 }

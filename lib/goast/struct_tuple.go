@@ -13,7 +13,7 @@ type StructTuple struct {
 	Fields          []*ast.Field
 	Kind            ObjectType
 	mapFieldsToType map[string]ObjectType
-	identifier      []AST
+	identifier      Stmt
 	title
 }
 
@@ -41,10 +41,8 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 			},
 		},
 	}
-	if len(t.identifier) > 0 {
-		if stmter, ok := t.identifier[0].(ToStmt); ok {
-			keyValues = stmter.ToStmt(ast.NewIdent("Key"))
-		}
+	if t.identifier != nil {
+		keyValues = t.identifier.ToStmt(ast.NewIdent("Key"))
 	}
 	fieldValues := []ast.Expr{}
 	iterateValues := []ast.Stmt{}
@@ -337,13 +335,11 @@ func (t *StructTuple) AST(above AST) (decl []ast.Decl) {
 		},
 		Body: body,
 	}
-	if len(t.identifier) > 0 {
-		if stmter, ok := t.identifier[0].(Stmt); ok {
-			ifStmt = stmter.Stmt(&ast.SelectorExpr{
-				X:   ast.NewIdent("rec"),
-				Sel: ast.NewIdent("Key"),
-			}, body.List)
-		}
+	if t.identifier != nil {
+		ifStmt = t.identifier.Stmt(&ast.SelectorExpr{
+			X:   ast.NewIdent("rec"),
+			Sel: ast.NewIdent("Key"),
+		}, body.List)
 	}
 	decl = append(decl, &ast.FuncDecl{
 		Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),

@@ -14,7 +14,6 @@ type Tuple struct {
 	ASTFields       []*Field
 	Kind            ObjectType
 	mapFieldsToType map[string]ObjectType
-	identifier      []AST
 	title
 }
 

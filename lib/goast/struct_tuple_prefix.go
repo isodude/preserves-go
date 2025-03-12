@@ -13,7 +13,7 @@ type TuplePrefix struct {
 	Fields          []*ast.Field
 	Kind            ObjectType
 	mapFieldsToType map[string]ObjectType
-	identifier      []AST
+	identifier      Stmt
 	title
 }
 
@@ -37,10 +37,8 @@ func (t *TuplePrefix) AST(above AST) (decl []ast.Decl) {
 			},
 		},
 	}
-	if len(t.identifier) > 0 {
-		if stmter, ok := t.identifier[0].(ToStmt); ok {
-			keyValues = stmter.ToStmt(ast.NewIdent("Key"))
-		}
+	if t.identifier != nil {
+		keyValues = t.identifier.ToStmt(ast.NewIdent("Key"))
 	}
 	sname := &ast.StarExpr{X: ast.NewIdent(name)}
 	var fieldType string

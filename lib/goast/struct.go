@@ -10,7 +10,7 @@ import (
 type Struct struct {
 	Fields          []*ast.Field
 	ASTFields       []*Field
-	Identifier      []AST
+	Identifier      Stmt
 	Value           preserves.Value
 	Kind            ObjectType
 	StructKind      ObjectType
@@ -31,7 +31,7 @@ func (s *Struct) Stmt(key ast.Expr, stmts []ast.Stmt) ast.Stmt {
 	panic("should not be reached")
 }
 func (s *Struct) ToStmt(key ast.Expr) []ast.Expr {
-	if u, ok := s.GetStructKind().(ToStmt); ok {
+	if u, ok := s.GetStructKind().(Stmt); ok {
 		return u.ToStmt(key)
 	}
 	panic("should not be reached")
@@ -86,7 +86,6 @@ func (s *Struct) GetStructKind() AST {
 			Fields:          s.Fields,
 			ASTFields:       s.ASTFields,
 			mapFieldsToType: s.mapFieldsToType,
-			identifier:      s.Identifier,
 		}
 	case StructTupleType:
 		return &StructTuple{

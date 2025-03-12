@@ -110,7 +110,6 @@ func (p *Passthrough) AST(above AST) (decl []ast.Decl) {
 		&ast.FuncDecl{
 			Name: ast.NewIdent(fmt.Sprintf("%s%s", name, "FromPreserves")),
 			Type: &ast.FuncType{
-
 				Params: &ast.FieldList{
 
 					List: []*ast.Field{{

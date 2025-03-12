@@ -18,7 +18,7 @@ type StructDict struct {
 	StructKind      ObjectType
 	mapFieldsToType map[string]ObjectType
 	mapKeyToField   []preserves.Value
-	identifier      []AST
+	identifier      Stmt
 	title
 }
 
@@ -281,16 +281,12 @@ func (d *StructDict) AST(above AST) (decl []ast.Decl) {
 		},
 	}
 	var keyValues []ast.Expr
-	if len(d.identifier) > 0 {
-		if stmter, ok := d.identifier[0].(Stmt); ok {
-			ifStmt = stmter.Stmt(&ast.SelectorExpr{
-				X:   ast.NewIdent("rec"),
-				Sel: ast.NewIdent("Key"),
-			}, []ast.Stmt{firstStmt})
-		}
-		if stmter, ok := d.identifier[0].(ToStmt); ok {
-			keyValues = stmter.ToStmt(ast.NewIdent("Key"))
-		}
+	if d.identifier != nil {
+		ifStmt = d.identifier.Stmt(&ast.SelectorExpr{
+			X:   ast.NewIdent("rec"),
+			Sel: ast.NewIdent("Key"),
+		}, []ast.Stmt{firstStmt})
+		keyValues = d.identifier.ToStmt(ast.NewIdent("Key"))
 	}
 	keyValues = append(keyValues, &ast.KeyValueExpr{Key: ast.NewIdent("Fields"), Value: &ast.ArrayType{Elt: &ast.CompositeLit{Type: ast.NewIdent("Value"), Elts: []ast.Expr{&ast.UnaryExpr{Op: token.AND, X: &ast.CompositeLit{Type: ast.NewIdent("Dictionary"), Elts: toElements}}}}}})
 	decl = append(decl,
