@@ -17,6 +17,7 @@ import (
 	"github.com/isodude/preserves-go/lib/preserves/text"
 
 	. "github.com/isodude/preserves-go/lib/preserves"
+	. "github.com/isodude/preserves-go/lib/schema/auto"
 )
 
 func FromPreserves(file string) (*Schema, error) {
@@ -172,11 +173,6 @@ func BundleToPreservesSchema(p Bundle, indent string) string {
 	return fmt.Sprintf("<bundle @modules %s>", ModulesToPreservesSchema(p.Modules, indent))
 }
 
-func (d Definitions) Add(k Symbol, v Definition) Definitions {
-	d[k] = v
-	return d
-}
-
 func DefinitionsFromPreservesSchema(d Definitions, values []Value) *Definitions {
 	symbol := SymbolFromPreservesSchema(values[0:1])
 	if symbol == nil {
@@ -205,11 +201,6 @@ func DefinitionsToPreservesSchema(p Definitions, indent string) string {
 		s = fmt.Sprintf("%s\n%s = %s%s.", s, SymbolToPreservesSchema(k, indent), def, space)
 	}
 	return s
-}
-
-func (d DictionaryEntries) Add(value Value, namedSimplePattern NamedSimplePattern) DictionaryEntries {
-	d[value] = namedSimplePattern
-	return d
 }
 
 func DictionaryEntriesFromPreservesSchema(d DictionaryEntries, values []Value) *DictionaryEntries {
@@ -303,10 +294,6 @@ func ModulePathToPreservesSchema(p ModulePath, indent string) (s string) {
 	return
 }
 
-func (m Modules) Add(modulePath ModulePath, schema Schema) Modules {
-	m[modulePath.ToHash()] = schema
-	return m
-}
 func ModulesFromPreservesSchema(m Modules, values []Value) *Modules {
 	if len(values) != 1 {
 		return nil

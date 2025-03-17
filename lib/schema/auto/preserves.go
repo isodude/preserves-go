@@ -1,4 +1,4 @@
-package schema
+package auto
 
 import (
 	"github.com/isodude/preserves-go/lib/extras"

@@ -5,6 +5,7 @@ import (
 
 	"github.com/isodude/preserves-go/lib/goast"
 	. "github.com/isodude/preserves-go/lib/preserves"
+	. "github.com/isodude/preserves-go/lib/schema/auto"
 	"github.com/kylelemons/godebug/diff"
 )
 

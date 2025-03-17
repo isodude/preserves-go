@@ -2,6 +2,7 @@ package schema
 
 import (
 	. "github.com/isodude/preserves-go/lib/preserves"
+	. "github.com/isodude/preserves-go/lib/schema/auto"
 )
 
 var _document = NewBundle(NewModules().Add(*NewModulePath(),

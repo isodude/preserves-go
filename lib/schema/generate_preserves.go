@@ -8,6 +8,7 @@ import (
 
 	"github.com/isodude/preserves-go/lib/goast"
 	. "github.com/isodude/preserves-go/lib/preserves"
+	. "github.com/isodude/preserves-go/lib/schema/auto"
 )
 
 func BundleGenerator(name string, b Bundle) *goast.Bundle {
