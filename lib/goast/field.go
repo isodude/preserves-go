@@ -1,6 +1,7 @@
 package goast
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 
@@ -31,29 +32,65 @@ func NewField(name string) *Field {
 	return f
 }
 
-func (f *Field) Expr() ast.Expr {
-	g := func(s string) string {
-		if strings.ToLower(s) == "any" {
-			return "Value"
-		}
-		if s == "String" {
-			return "Pstring"
-		}
-		return s
+func (f *Field) ToUpper() string {
+	if f.name == "" {
+		return ""
 	}
+	return fmt.Sprintf("%s%s", strings.ToUpper(string(f.name[0])), f.name[1:])
+}
+func (f *Field) Expr() ast.Expr {
 	if f.Array {
-		return &ast.ArrayType{Elt: ast.NewIdent(g(f.Type))}
+		return &ast.ArrayType{Elt: ast.NewIdent(f.GetFieldTypeName())}
 	}
 	if f.Dict {
-		return ast.NewIdent(g(f.DictValue.GetTitle()))
+		return ast.NewIdent(f.convertType(f.DictValue.GetTitle()))
 	}
-	return ast.NewIdent(g(f.Type))
+	return ast.NewIdent(f.GetFieldTypeName())
 	// return f.fieldType.Expr()
 }
-
+func (f *Field) convertType(s string) string {
+	if strings.ToLower(s) == "any" {
+		return "Value"
+	}
+	if s == "String" {
+		return "Pstring"
+	}
+	return s
+}
 func (f *Field) GetFieldTypeName() string {
-	return f.Type
+	return f.convertType(f.Type)
 	// return f.fieldType.Name()
+}
+
+func (f *Field) GetToPreservesFunction(m map[string]ObjectType) *ast.Ident {
+	if f.GetFieldTypeName() == "String" {
+		return ast.NewIdent("ShimStringToPreserves")
+	}
+	if f.GetFieldTypeName() == "SignedInteger" {
+		return ast.NewIdent("ShimIntToPreserves")
+	}
+	return ToMapToCallFunc(m, f.GetFieldTypeName())
+}
+
+func (f *Field) GetFromPreservesFunction(m map[string]ObjectType) *ast.Ident {
+	if f.GetFieldTypeName() == "String" {
+		return ast.NewIdent("ShimStringFromPreserves")
+	}
+	if f.GetFieldTypeName() == "SignedInteger" {
+		return ast.NewIdent("ShimIntFromPreserves")
+	}
+	return MapToCallFunc(m, f.GetFieldTypeName())
+}
+
+func (f *Field) AddMaybeRef(m map[string]ObjectType, ident *ast.Ident) ast.Expr {
+	o, ok := m[strings.ToLower(f.GetFieldTypeName())]
+	if !ok {
+		return nil
+	}
+	if !(o == UnionInterfaceObjectType || o == InterfaceObjectType) {
+		return &ast.StarExpr{X: ident}
+	}
+	return ident
 }
 
 func (f *Field) SetArray() {
@@ -78,21 +115,7 @@ func (f *Field) ConvertToMap(a AST) *Map {
 	return &Map{title: *a.Title(), Key: key, Value: value}
 }
 func (f *Field) GetObjectType() ObjectType {
-	/*allLit := true
-	oneLit := false
-	for _, a := range u.ASTs {
-		if _, ok := a.(*Lit); !ok {
-			allLit = false
-		} else {
-			oneLit = true
-		}
-	}
-	if allLit {
-		return UnionConstObjectType
-	}
-	if oneLit {
-		return UnionVariantObjectType
-	}*/
+	// TODO
 	return UnionInterfaceObjectType
 }
 

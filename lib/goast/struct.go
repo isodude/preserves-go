@@ -69,7 +69,7 @@ func (s *Struct) GetStructKind() AST {
 	case StructDictType:
 		return &StructDict{
 			title:           s.title,
-			Fields:          s.Fields,
+			Fields:          s.ASTFields,
 			mapFieldsToType: s.mapFieldsToType,
 			mapKeyToField:   s.MapKeyToField,
 			identifier:      s.Identifier,

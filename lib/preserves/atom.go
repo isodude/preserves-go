@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/big"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -333,4 +334,29 @@ func ValueFromPreserves(value Value) Value {
 }
 func ValueToPreserves(v Value) Value {
 	return v
+}
+
+func ShimIntToPreserves(i int) *SignedInteger {
+	return NewSignedInteger(strconv.Itoa(i))
+}
+
+func ShimIntFromPreserves(value Value) int {
+	if obj, ok := value.(*SignedInteger); ok {
+		a := big.Int(*obj)
+		return int(a.Int64())
+	}
+
+	return -1
+}
+
+func ShimStringToPreserves(s string) *Pstring {
+	return NewPstring(s)
+}
+
+func ShimStringFromPreserves(value Value) string {
+	if obj, ok := value.(*Pstring); ok {
+		return string(*obj)
+	}
+
+	return ""
 }

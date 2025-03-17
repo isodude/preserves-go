@@ -203,9 +203,8 @@ func SimplePatternAnyGenerator(g goast.AST, s SimplePatternAny) {
 }
 
 func SimplePatternEmbeddedGenerator(g goast.AST, s SimplePattern) {
-	g.SetStructKind(goast.StructRecType)
-	panic("not implemented")
 	// TODO
+	panic("not implemented")
 }
 
 func SimplePatternSeqofGenerator(g goast.AST, s SimplePattern) {
